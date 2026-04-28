@@ -5,25 +5,99 @@ import { supabase } from '../lib/supabase'
 import { Eye, EyeOff, ArrowLeft, Mail, CheckCircle, AlertCircle } from 'lucide-react'
 
 const UNIVERSITIES = [
-  'MIT', 'Stanford University', 'Harvard University', 'Carnegie Mellon University',
-  'University of California, Berkeley', 'Caltech', 'Princeton University', 'Columbia University',
-  'Cornell University', 'University of Michigan', 'University of Illinois Urbana-Champaign',
-  'Georgia Institute of Technology', 'University of Texas at Austin', 'University of Washington',
-  'Purdue University', 'Ohio State University', 'Penn State University', 'UCLA',
-  'UC San Diego', 'UC Davis', 'University of Wisconsin-Madison', 'University of Minnesota',
-  'Northwestern University', 'Yale University', 'Duke University', 'Rice University',
-  'Vanderbilt University', 'University of Southern California', 'New York University',
-  'Boston University', 'Northeastern University', 'University of Virginia',
-  'University of North Carolina', 'University of Florida', 'Florida State University',
-  'Texas A&M University', 'Arizona State University', 'University of Arizona',
-  'University of Colorado Boulder', 'University of Maryland', 'Virginia Tech',
-  'University of Pittsburgh', 'Case Western Reserve University', 'Tufts University',
+  // Ivies & top privates
+  'MIT', 'Stanford University', 'Harvard University', 'Princeton University',
+  'Yale University', 'Columbia University', 'University of Pennsylvania', 'Brown University',
+  'Dartmouth College', 'Cornell University', 'Caltech', 'Carnegie Mellon University',
+  'Duke University', 'Northwestern University', 'Johns Hopkins University', 'Rice University',
+  'Vanderbilt University', 'Notre Dame University', 'Georgetown University', 'Emory University',
+  'Washington University in St. Louis', 'University of Notre Dame', 'Tufts University',
+  'Boston College', 'Wake Forest University', 'Tulane University', 'Lehigh University',
+  'Case Western Reserve University', 'Brandeis University', 'Villanova University',
+
+  // Top public universities (UCs)
+  'University of California, Berkeley', 'UCLA', 'UC San Diego', 'UC Davis',
+  'UC Santa Barbara', 'UC Irvine', 'UC Santa Cruz', 'UC Riverside', 'UC Merced',
+
+  // Top public universities (flagship)
+  'University of Michigan', 'University of Virginia', 'University of North Carolina at Chapel Hill',
+  'University of Texas at Austin', 'University of Washington', 'University of Wisconsin-Madison',
+  'Georgia Institute of Technology', 'University of Illinois Urbana-Champaign',
+  'University of Florida', 'Ohio State University', 'Penn State University',
+  'University of Maryland', 'Purdue University', 'Texas A&M University',
+  'University of Minnesota', 'University of Southern California', 'New York University',
+  'Boston University', 'Northeastern University', 'Arizona State University',
+  'University of Arizona', 'University of Colorado Boulder', 'Virginia Tech',
+  'University of Pittsburgh', 'Michigan State University', 'Indiana University',
+  'University of Georgia', 'Florida State University', 'University of Tennessee',
+  'University of Missouri', 'University of Iowa', 'Iowa State University',
+  'University of Kansas', 'Kansas State University', 'University of Nebraska-Lincoln',
+  'University of Oklahoma', 'Oklahoma State University', 'University of Arkansas',
+  'University of Alabama', 'Auburn University', 'University of Mississippi',
+  'Mississippi State University', 'Louisiana State University', 'Tulane University',
+  'University of South Carolina', 'Clemson University', 'University of Kentucky',
+  'University of Louisville', 'West Virginia University', 'University of Connecticut',
+  'University of Massachusetts Amherst', 'University of New Hampshire',
+  'University of Vermont', 'University of Rhode Island', 'University of Maine',
+  'University of Delaware', 'Rutgers University', 'University at Buffalo',
+  'Stony Brook University', 'University at Albany', 'Binghamton University',
+
+  // Strong engineering/tech schools
   'Rensselaer Polytechnic Institute', 'Rochester Institute of Technology',
-  'Worcester Polytechnic Institute', 'Rutgers University', 'Stony Brook University',
-  'University at Buffalo', 'Indiana University', 'Michigan State University',
-  'Iowa State University', 'University of Notre Dame', 'Wake Forest University',
+  'Worcester Polytechnic Institute', 'Stevens Institute of Technology',
+  'Colorado School of Mines', 'Missouri University of Science and Technology',
+  'Illinois Institute of Technology', 'Drexel University', 'Kettering University',
+  'Harvey Mudd College', 'Franklin W. Olin College of Engineering',
+
+  // Strong business/liberal arts
+  'University of Southern California', 'Babson College', 'Bentley University',
+  'Bryant University', 'Bucknell University', 'Colgate University', 'Lafayette College',
+  'Dickinson College', 'Gettysburg College', 'Franklin & Marshall College',
+  'Fordham University', 'Santa Clara University', 'Gonzaga University',
+  'Loyola University Chicago', 'DePaul University', 'Marquette University',
+  'University of San Diego', 'Pepperdine University', 'Chapman University',
+
+  // HBCUs
+  'Howard University', 'Spelman College', 'Morehouse College', 'Hampton University',
+  'Florida A&M University', 'North Carolina A&T State University',
+  'Morgan State University', 'Tuskegee University', 'Xavier University of Louisiana',
+  'Prairie View A&M University', 'Clark Atlanta University', 'Fisk University',
+
+  // Strong state schools
+  'University of Utah', 'Utah State University', 'Brigham Young University',
+  'University of Nevada, Las Vegas', 'University of Nevada, Reno',
+  'Oregon State University', 'University of Oregon', 'Washington State University',
+  'San Diego State University', 'Cal Poly San Luis Obispo', 'Cal Poly Pomona',
+  'San Jose State University', 'California State University, Long Beach',
+  'University of Houston', 'Texas Tech University', 'University of North Texas',
+  'Southern Methodist University', 'Texas Christian University',
+  'Baylor University', 'University of Denver', 'Colorado State University',
+  'University of New Mexico', 'New Mexico State University',
+  'University of Idaho', 'Boise State University', 'Montana State University',
+  'North Dakota State University', 'South Dakota State University',
+  'University of Wyoming', 'University of Alaska Fairbanks',
+
+  // NYC area
+  'New York University', 'Fordham University', 'The City College of New York',
+  'Baruch College', 'Hunter College', 'Brooklyn College', 'Queens College',
+  'Pace University', 'Long Island University', 'Hofstra University',
+  'Adelphi University', 'St. John\'s University',
+
+  // Other notable
+  'Syracuse University', 'Rochester University', 'Clarkson University',
+  'Rochester Institute of Technology', 'Marist College', 'Quinnipiac University',
+  'Sacred Heart University', 'University of Scranton', 'Saint Joseph\'s University',
+  'Temple University', 'Drexel University', 'Duquesne University',
+  'Loyola University Maryland', 'American University', 'George Washington University',
+  'George Mason University', 'James Madison University', 'William & Mary',
+  'Radford University', 'Old Dominion University', 'Virginia Commonwealth University',
+  'University of Richmond', 'Elon University', 'Appalachian State University',
+  'East Carolina University', 'North Carolina State University',
+  'University of South Florida', 'University of Miami', 'Florida Tech',
+  'Florida International University', 'University of Central Florida',
+
   'Other',
-]
+].filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b))
 
 const MAJORS = [
   'Computer Science', 'Electrical Engineering', 'Computer Engineering',
