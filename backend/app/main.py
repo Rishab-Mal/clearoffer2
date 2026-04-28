@@ -6,7 +6,7 @@ from .config import settings
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Lantern API", version="1.0.0")
+app = FastAPI(title="ClearOffer API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,7 +25,7 @@ app.include_router(ai.router, prefix="/api")
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "service": "Lantern API"}
+    return {"status": "ok", "service": "ClearOffer API"}
 
 
 @app.get("/api/stats/reviews-count")

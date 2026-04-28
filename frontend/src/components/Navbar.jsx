@@ -22,7 +22,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link to="/dashboard" className="flex items-center gap-2">
             <span className="text-amber-500 text-xl">✦</span>
-            <span className="font-black text-slate-900 text-lg tracking-tight">LANTERN</span>
+            <span className="font-black text-slate-900 text-lg tracking-tight">CLEAROFFER</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-1">

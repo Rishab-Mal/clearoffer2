@@ -9,7 +9,7 @@ export async function chat(prompt, maxTokens = 1024) {
       'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': 'https://clearoffer.org',
-      'X-Title': 'Lantern',
+      'X-Title': 'ClearOffer',
     },
     body: JSON.stringify({
       model: MODEL,

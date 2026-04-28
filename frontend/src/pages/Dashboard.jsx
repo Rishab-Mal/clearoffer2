@@ -78,7 +78,7 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-slate-900">Hey {user?.name?.split(' ')[0]} 👋</h1>
-          <p className="text-slate-500 mt-1">Here's what's new on Lantern.</p>
+          <p className="text-slate-500 mt-1">Here's what's new on ClearOffer.</p>
         </div>
 
         <Link to="/search" className="flex items-center gap-3 bg-white border border-slate-200 hover:border-amber-300 rounded-2xl px-5 py-4 mb-8 transition-colors group">
