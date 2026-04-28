@@ -1,5 +1,5 @@
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY
-const MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'anthropic/claude-3.5-sonnet'
+const MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'anthropic/claude-3.5-haiku-20241022'
 const BASE = 'https://openrouter.ai/api/v1'
 
 export async function chat(prompt, maxTokens = 1024) {
