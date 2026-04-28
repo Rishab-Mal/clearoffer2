@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { supabase } from '../lib/supabase'
-import api from '../lib/api'
+import { chat, parseJSON } from '../lib/openrouter'
 import Navbar from '../components/Navbar'
 import { Upload, Zap, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 
@@ -81,15 +81,31 @@ export default function ResumeFit() {
     setLoading(true)
     try {
       const { data: companyData } = await supabase.from('companies').select('ai_overview').eq('name', company).single()
-      const res = await api.post('/api/ai/resume-fit', {
-        resume_text: resumeText,
-        company,
-        role,
-        company_overview: companyData?.ai_overview || null,
-      })
-      setResult(res.data)
+      const context = companyData?.ai_overview ? `Company context: ${companyData.ai_overview}\n\n` : ''
+      const prompt = `You are an expert resume reviewer for tech internships.
+
+${context}A student is applying for a ${role} position at ${company}.
+
+Resume:
+---
+${resumeText.slice(0, 4000)}
+---
+
+Return a JSON object with exactly:
+- overall_score: int 0-100
+- skills_score: int 0-100
+- experience_score: int 0-100
+- project_score: int 0-100
+- strengths: array of 2-4 specific strength strings
+- gaps: array of 2-4 specific gap strings
+- suggestions: array of 3-5 actionable suggestion strings
+
+Be honest and specific. Return ONLY valid JSON.`
+
+      const text = await chat(prompt, 1024)
+      setResult(parseJSON(text))
     } catch (err) {
-      setError(err.response?.data?.detail || 'AI analysis failed. Make sure the backend is running.')
+      setError(err.message || 'AI analysis failed. Check your OpenRouter API key.')
     } finally {
       setLoading(false)
     }

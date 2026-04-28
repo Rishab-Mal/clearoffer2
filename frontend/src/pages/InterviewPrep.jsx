@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import api from '../lib/api'
+import { chat, parseJSON } from '../lib/openrouter'
 import Navbar from '../components/Navbar'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { Cpu, BookOpen, MessageSquare, ArrowLeft, Clock } from 'lucide-react'
@@ -47,12 +47,20 @@ export default function InterviewPrep() {
       let tips = []
 
       if (topics.length > 0) {
-        const aiResult = await api.post('/api/ai/interview-prep', {
-          company_name: company.name,
-          topics: topics.slice(0, 6).map(t => t.name),
-        }).then(r => r.data).catch(() => ({}))
-        study_plan = aiResult.study_plan || null
-        tips = aiResult.tips || []
+        try {
+          const topList = topics.slice(0, 6).map(t => t.name).join(', ')
+          const prompt = `Generate a 4-week interview prep plan for a student interviewing at ${company.name}.
+Most common topics reported by past interns: ${topList}.
+
+Return JSON with:
+- study_plan: multi-paragraph string (use **Week N:** headers)
+- tips: array of 3-4 specific interview tips for ${company.name}
+
+Return ONLY valid JSON.`
+          const parsed = parseJSON(await chat(prompt, 600))
+          study_plan = parsed.study_plan || null
+          tips = parsed.tips || []
+        } catch {}
       }
 
       setPrep({
