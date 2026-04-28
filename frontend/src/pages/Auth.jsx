@@ -34,10 +34,92 @@ const MAJORS = [
   'Design / HCI', 'Cognitive Science', 'Other',
 ]
 
-const YEARS = [2023, 2024, 2025, 2026, 2027, 2028]
+const YEARS = [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030]
+
+// Trie for fast prefix search
+class TrieNode {
+  constructor() { this.children = {}; this.words = [] }
+}
+class Trie {
+  constructor() { this.root = new TrieNode() }
+  insert(word) {
+    const key = word.toLowerCase()
+    for (let i = 0; i < key.length; i++) {
+      let node = this.root
+      for (const ch of key.slice(i)) {
+        if (!node.children[ch]) node.children[ch] = new TrieNode()
+        node = node.children[ch]
+        if (!node.words.includes(word)) node.words.push(word)
+      }
+    }
+  }
+  search(query) {
+    if (!query) return []
+    let node = this.root
+    for (const ch of query.toLowerCase()) {
+      if (!node.children[ch]) return []
+      node = node.children[ch]
+    }
+    return node.words.slice(0, 8)
+  }
+}
+const universityTrie = new Trie()
+UNIVERSITIES.forEach(u => universityTrie.insert(u))
 
 function validateEdu(email) {
   return email.trim().toLowerCase().endsWith('.edu')
+}
+
+function UniversitySearch({ value, onChange }) {
+  const [query, setQuery] = useState(value || '')
+  const [suggestions, setSuggestions] = useState([])
+  const [open, setOpen] = useState(false)
+  const [confirmed, setConfirmed] = useState(!!value)
+
+  const handleInput = (e) => {
+    const q = e.target.value
+    setQuery(q)
+    setConfirmed(false)
+    onChange('')
+    setSuggestions(q.length >= 1 ? universityTrie.search(q) : [])
+    setOpen(true)
+  }
+
+  const select = (uni) => {
+    setQuery(uni)
+    onChange(uni)
+    setSuggestions([])
+    setOpen(false)
+    setConfirmed(true)
+  }
+
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        value={query}
+        onChange={handleInput}
+        onFocus={() => { if (suggestions.length) setOpen(true) }}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Search your university..."
+        autoComplete="off"
+        className={`w-full bg-lantern-bg border rounded-xl px-4 py-3 text-white placeholder-slate-600 text-sm outline-none transition-colors ${confirmed ? 'border-amber-500' : 'border-lantern-border focus:border-amber-500'}`}
+      />
+      {open && suggestions.length > 0 && (
+        <ul className="absolute z-50 w-full mt-1 bg-lantern-card border border-lantern-border rounded-xl overflow-hidden shadow-xl">
+          {suggestions.map(u => (
+            <li
+              key={u}
+              onMouseDown={() => select(u)}
+              className="px-4 py-2.5 text-sm text-slate-300 hover:bg-amber-500 hover:text-black cursor-pointer transition-colors"
+            >
+              {u}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
 }
 
 export default function Auth() {
@@ -184,15 +266,7 @@ export default function Auth() {
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-400 mb-1.5">University</label>
-                    <select
-                      value={form.university}
-                      onChange={set('university')}
-                      required
-                      className="w-full bg-lantern-bg border border-lantern-border focus:border-amber-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors appearance-none"
-                    >
-                      <option value="" disabled>Select your university</option>
-                      {UNIVERSITIES.map(u => <option key={u} value={u}>{u}</option>)}
-                    </select>
+                    <UniversitySearch value={form.university} onChange={v => { setForm(f => ({ ...f, university: v })); setError('') }} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
