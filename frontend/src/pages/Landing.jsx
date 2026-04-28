@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { Cpu, BookOpen, BarChart3, Lock, Star, Github, ArrowRight } from 'lucide-react'
-
-const TARGET_COUNT = 2847
+import { supabase } from '../lib/supabase'
 
 function useCountUp(target, duration = 2000) {
   const [count, setCount] = useState(0)
@@ -10,6 +9,7 @@ function useCountUp(target, duration = 2000) {
   const elRef = useRef(null)
 
   useEffect(() => {
+    if (target === null) return
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !startedRef.current) {
@@ -34,7 +34,14 @@ function useCountUp(target, duration = 2000) {
 }
 
 export default function Landing() {
-  const [count, counterRef] = useCountUp(TARGET_COUNT)
+  const [reviewCount, setReviewCount] = useState(null)
+
+  useEffect(() => {
+    supabase.from('reviews').select('*', { count: 'exact', head: true }).eq('is_approved', true)
+      .then(({ count }) => setReviewCount(count ?? 0))
+  }, [])
+
+  const [count, counterRef] = useCountUp(reviewCount)
 
   return (
     <div className="bg-lantern-bg min-h-screen text-white">
@@ -170,10 +177,18 @@ export default function Landing() {
 
       {/* Review Counter */}
       <section ref={counterRef} className="bg-lantern-card border-y border-lantern-border py-20 px-6 text-center">
-        <p className="text-6xl md:text-7xl font-black text-white mb-3 tabular-nums">
-          {count.toLocaleString()}
-        </p>
-        <p className="text-slate-400 text-lg">reviews submitted by students at <span className="text-white font-semibold">340+ universities</span></p>
+        {reviewCount === null ? (
+          <div className="w-16 h-12 bg-lantern-border rounded-xl mx-auto mb-3 animate-pulse" />
+        ) : reviewCount === 0 ? (
+          <p className="text-2xl font-bold text-slate-500">Be the first to submit a review.</p>
+        ) : (
+          <>
+            <p className="text-6xl md:text-7xl font-black text-white mb-3 tabular-nums">
+              {count.toLocaleString()}
+            </p>
+            <p className="text-slate-400 text-lg">reviews submitted and counting</p>
+          </>
+        )}
       </section>
 
       {/* Footer */}
