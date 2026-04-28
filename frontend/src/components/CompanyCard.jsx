@@ -1,37 +1,34 @@
 import { Link } from 'react-router-dom'
 import { Star, MessageSquare, Bookmark, BookmarkCheck } from 'lucide-react'
 import { useState } from 'react'
-import api from '../lib/api'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 const COMPANY_COLORS = {
-  Meta: 'bg-blue-500',
-  Google: 'bg-red-500',
-  Amazon: 'bg-orange-500',
-  Apple: 'bg-gray-700',
-  Microsoft: 'bg-blue-600',
-  Netflix: 'bg-red-600',
-  Stripe: 'bg-violet-600',
-  Airbnb: 'bg-rose-500',
-  Uber: 'bg-slate-800',
-  Lyft: 'bg-pink-500',
+  Meta: 'bg-blue-500', Google: 'bg-red-500', Amazon: 'bg-orange-500',
+  Apple: 'bg-gray-700', Microsoft: 'bg-blue-600', Netflix: 'bg-red-600',
+  Stripe: 'bg-violet-600', Airbnb: 'bg-rose-500', Uber: 'bg-slate-800', Lyft: 'bg-pink-500',
 }
 
 export default function CompanyCard({ company, showSave = true }) {
+  const { user } = useAuth()
   const [saved, setSaved] = useState(company.is_saved || false)
-
   const bgColor = COMPANY_COLORS[company.name] || 'bg-slate-600'
 
   const handleSave = async (e) => {
     e.preventDefault()
     e.stopPropagation()
-    try {
-      if (saved) {
-        await api.delete(`/api/users/saved-companies/${company.id}`)
-      } else {
-        await api.post('/api/users/saved-companies', { company_id: company.id })
-      }
-      setSaved(!saved)
-    } catch {}
+    if (!user) return
+    if (saved) {
+      await supabase.from('saved_companies')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('company_id', company.id)
+    } else {
+      await supabase.from('saved_companies')
+        .insert({ user_id: user.id, company_id: company.id })
+    }
+    setSaved(!saved)
   }
 
   const stars = Array.from({ length: 5 }, (_, i) => i < Math.round(company.avg_rating || 0))
@@ -73,15 +70,13 @@ export default function CompanyCard({ company, showSave = true }) {
       {company.top_tags?.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {company.top_tags.slice(0, 3).map(tag => (
-            <span key={tag} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-xs font-medium">
-              {tag}
-            </span>
+            <span key={tag} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-xs font-medium">{tag}</span>
           ))}
         </div>
       )}
 
-      {company.ai_teaser && (
-        <p className="mt-3 text-xs text-slate-500 line-clamp-2">{company.ai_teaser}</p>
+      {company.ai_overview && (
+        <p className="mt-3 text-xs text-slate-500 line-clamp-2">{company.ai_overview}</p>
       )}
     </Link>
   )

@@ -1,71 +1,62 @@
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
-import Navbar from '../components/Navbar'
-import { Upload, Zap, CheckCircle, XCircle, AlertCircle, ArrowRight, ChevronDown } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 import api from '../lib/api'
+import Navbar from '../components/Navbar'
+import { Upload, Zap, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 
-const COMPANIES = ['Stripe', 'Google', 'Meta', 'Amazon', 'Microsoft', 'Apple', 'Netflix', 'Airbnb',
-  'Uber', 'Figma', 'Notion', 'Snowflake', 'Databricks', 'Coinbase', 'OpenAI', 'Anthropic', 'Palantir']
 const ROLES = ['Software Engineer Intern', 'PM Intern', 'Data Science Intern', 'ML Engineer Intern',
   'Design Intern', 'DevOps/Infrastructure Intern', 'Finance Intern', 'Research Intern']
-
-const MOCK_RESULT = {
-  overall_score: 74,
-  skills_score: 82,
-  experience_score: 68,
-  project_score: 71,
-  strengths: [
-    'Strong Python and ML experience aligns with what Stripe data interns typically have',
-    'Open source contributions signal engineering maturity',
-    'Side project with payment API integration is highly relevant',
-  ],
-  gaps: [
-    'No distributed systems experience — Stripe is a distributed-first company',
-    'SQL skills not mentioned — expected for data-adjacent roles',
-    'No fintech or financial systems coursework',
-  ],
-  suggestions: [
-    'Add a project using PostgreSQL or MySQL to demonstrate database skills',
-    'Take a distributed systems course or add Kafka/Redis to a project',
-    'Emphasize any financial modeling or economics coursework',
-    'Mention your understanding of APIs and webhook systems — very relevant at Stripe',
-    'Add metrics to your projects: "reduced latency by X%" beats "optimized performance"',
-  ],
-}
 
 function ScoreRing({ score, size = 120, strokeWidth = 10 }) {
   const r = (size - strokeWidth) / 2
   const circ = 2 * Math.PI * r
   const offset = circ - (score / 100) * circ
   const color = score >= 75 ? '#22C55E' : score >= 50 ? '#F59E0B' : '#EF4444'
-
   return (
     <svg width={size} height={size} className="-rotate-90">
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#E2E8F0" strokeWidth={strokeWidth} />
-      <circle
-        cx={size/2} cy={size/2} r={r} fill="none"
-        stroke={color} strokeWidth={strokeWidth}
-        strokeDasharray={circ} strokeDashoffset={offset}
-        strokeLinecap="round"
-        style={{ transition: 'stroke-dashoffset 1s ease' }}
-      />
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={strokeWidth}
+        strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+        style={{ transition: 'stroke-dashoffset 1s ease' }} />
       <text x={size/2} y={size/2} textAnchor="middle" dominantBaseline="middle"
-        className="rotate-90" style={{ transform: `rotate(90deg)`, transformOrigin: `${size/2}px ${size/2}px` }}
-        fill={color} fontSize={size / 4} fontWeight="900" fontFamily="Inter, sans-serif"
-      >
+        style={{ transform: `rotate(90deg)`, transformOrigin: `${size/2}px ${size/2}px` }}
+        fill={color} fontSize={size/4} fontWeight="900" fontFamily="Inter, sans-serif">
         {score}
       </text>
     </svg>
   )
 }
 
+function ScoreRow({ label, score }) {
+  const color = score >= 75 ? 'bg-green-500' : score >= 50 ? 'bg-amber-500' : 'bg-red-400'
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-slate-500 w-32 flex-shrink-0">{label}</span>
+      <div className="flex-1 bg-slate-100 rounded-full h-2">
+        <div className={`${color} rounded-full h-2 transition-all`} style={{ width: `${score}%` }} />
+      </div>
+      <span className="text-sm font-bold text-slate-800 w-8 text-right">{score}</span>
+    </div>
+  )
+}
+
 export default function ResumeFit() {
   const [resumeText, setResumeText] = useState('')
+  const [companies, setCompanies] = useState([])
   const [company, setCompany] = useState('')
   const [role, setRole] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
+  const [companiesLoaded, setCompaniesLoaded] = useState(false)
+
+  const loadCompanies = async () => {
+    if (companiesLoaded) return
+    const { data } = await supabase.from('companies').select('id, name').order('name')
+    setCompanies(data || [])
+    setCompaniesLoaded(true)
+  }
 
   const onDrop = useCallback(files => {
     const file = files[0]
@@ -89,10 +80,16 @@ export default function ResumeFit() {
     setError('')
     setLoading(true)
     try {
-      const res = await api.post('/api/ai/resume-fit', { resume_text: resumeText, company, role })
+      const { data: companyData } = await supabase.from('companies').select('ai_overview').eq('name', company).single()
+      const res = await api.post('/api/ai/resume-fit', {
+        resume_text: resumeText,
+        company,
+        role,
+        company_overview: companyData?.ai_overview || null,
+      })
       setResult(res.data)
-    } catch {
-      setResult(MOCK_RESULT)
+    } catch (err) {
+      setError(err.response?.data?.detail || 'AI analysis failed. Make sure the backend is running.')
     } finally {
       setLoading(false)
     }
@@ -112,14 +109,11 @@ export default function ResumeFit() {
 
         {!result ? (
           <div className="space-y-5">
-            {/* Resume input */}
             <div className="bg-white border border-slate-200 rounded-2xl p-6">
               <h2 className="font-bold text-slate-900 mb-4">Your resume</h2>
               <div
                 {...getRootProps()}
-                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors mb-4 ${
-                  isDragActive ? 'border-amber-400 bg-amber-50' : 'border-slate-200 hover:border-amber-300'
-                }`}
+                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors mb-4 ${isDragActive ? 'border-amber-400 bg-amber-50' : 'border-slate-200 hover:border-amber-300'}`}
               >
                 <input {...getInputProps()} />
                 <Upload size={24} className="mx-auto text-slate-400 mb-2" />
@@ -137,7 +131,6 @@ export default function ResumeFit() {
               <p className="text-xs text-slate-400 text-right mt-1">{resumeText.length}/5000</p>
             </div>
 
-            {/* Target */}
             <div className="bg-white border border-slate-200 rounded-2xl p-6">
               <h2 className="font-bold text-slate-900 mb-4">Target role</h2>
               <div className="grid grid-cols-2 gap-4">
@@ -146,10 +139,11 @@ export default function ResumeFit() {
                   <select
                     value={company}
                     onChange={e => setCompany(e.target.value)}
+                    onFocus={loadCompanies}
                     className="w-full border border-slate-200 focus:border-amber-400 rounded-xl px-4 py-3 text-sm outline-none appearance-none"
                   >
                     <option value="">Select company</option>
-                    {COMPANIES.map(c => <option key={c}>{c}</option>)}
+                    {companies.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                   </select>
                 </div>
                 <div>
@@ -168,8 +162,7 @@ export default function ResumeFit() {
 
             {error && (
               <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
-                <AlertCircle size={15} />
-                {error}
+                <AlertCircle size={15} />{error}
               </div>
             )}
 
@@ -178,22 +171,11 @@ export default function ResumeFit() {
               disabled={loading}
               className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-bold py-4 rounded-2xl transition-colors text-sm"
             >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  Analyzing your resume...
-                </>
-              ) : (
-                <>
-                  <Zap size={16} />
-                  Score my resume
-                </>
-              )}
+              {loading ? <><div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />Analyzing...</> : <><Zap size={16} />Score my resume</>}
             </button>
           </div>
         ) : (
           <div className="space-y-5">
-            {/* Score */}
             <div className="bg-white border border-slate-200 rounded-2xl p-8">
               <div className="flex flex-col sm:flex-row items-center gap-8">
                 <div className="flex flex-col items-center">
@@ -208,35 +190,24 @@ export default function ResumeFit() {
               </div>
             </div>
 
-            {/* Strengths */}
             <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
-              <h3 className="font-bold text-green-800 flex items-center gap-2 mb-3">
-                <CheckCircle size={16} />What's working
-              </h3>
+              <h3 className="font-bold text-green-800 flex items-center gap-2 mb-3"><CheckCircle size={16} />What's working</h3>
               <ul className="space-y-2">
                 {result.strengths.map((s, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-green-700">
-                    <span className="text-green-500 mt-0.5 flex-shrink-0">✓</span>{s}
-                  </li>
+                  <li key={i} className="flex items-start gap-2 text-sm text-green-700"><span className="text-green-500 mt-0.5 flex-shrink-0">✓</span>{s}</li>
                 ))}
               </ul>
             </div>
 
-            {/* Gaps */}
             <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
-              <h3 className="font-bold text-red-800 flex items-center gap-2 mb-3">
-                <XCircle size={16} />What's missing
-              </h3>
+              <h3 className="font-bold text-red-800 flex items-center gap-2 mb-3"><XCircle size={16} />What's missing</h3>
               <ul className="space-y-2">
                 {result.gaps.map((g, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-red-700">
-                    <span className="text-red-400 mt-0.5 flex-shrink-0">✗</span>{g}
-                  </li>
+                  <li key={i} className="flex items-start gap-2 text-sm text-red-700"><span className="text-red-400 mt-0.5 flex-shrink-0">✗</span>{g}</li>
                 ))}
               </ul>
             </div>
 
-            {/* Suggestions */}
             <div className="bg-white border border-slate-200 rounded-2xl p-6">
               <h3 className="font-bold text-slate-900 mb-3">Action items</h3>
               <ol className="space-y-3">
@@ -258,19 +229,6 @@ export default function ResumeFit() {
           </div>
         )}
       </div>
-    </div>
-  )
-}
-
-function ScoreRow({ label, score }) {
-  const color = score >= 75 ? 'bg-green-500' : score >= 50 ? 'bg-amber-500' : 'bg-red-400'
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs text-slate-500 w-32 flex-shrink-0">{label}</span>
-      <div className="flex-1 bg-slate-100 rounded-full h-2">
-        <div className={`${color} rounded-full h-2 transition-all`} style={{ width: `${score}%` }} />
-      </div>
-      <span className="text-sm font-bold text-slate-800 w-8 text-right">{score}</span>
     </div>
   )
 }
