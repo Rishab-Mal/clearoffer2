@@ -43,13 +43,14 @@ export function AuthProvider({ children }) {
     if (error) throw error
 
     if (data.user) {
-      await supabase.from('profiles').insert({
+      const { error: profileError } = await supabase.from('profiles').insert({
         id: data.user.id,
         name,
         university,
         grad_year: Number(grad_year),
         major,
       })
+      if (profileError) console.error('Profile insert failed:', profileError.message)
     }
     return data
   }

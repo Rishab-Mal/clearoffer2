@@ -87,7 +87,7 @@ export default function Auth() {
         setScreen('verify')
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Something went wrong. Please try again.')
+      setError(err.message || 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
