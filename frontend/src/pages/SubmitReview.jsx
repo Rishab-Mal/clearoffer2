@@ -74,14 +74,26 @@ function ProgressBar({ current }) {
 }
 
 function RatingSlider({ label, name, value, onChange }) {
+  const [hovered, setHovered] = useState(0)
+  const active = hovered || value
+
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
         <label className="text-sm font-medium text-slate-700">{label}</label>
-        <div className="flex gap-1">
+        <div className="flex gap-1" onMouseLeave={() => setHovered(0)}>
           {[1, 2, 3, 4, 5].map(v => (
-            <button key={v} type="button" onClick={() => onChange(name, v)} className="transition-transform hover:scale-110">
-              <Star size={18} className={v <= value ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'} />
+            <button
+              key={v}
+              type="button"
+              onClick={() => onChange(name, v)}
+              onMouseEnter={() => setHovered(v)}
+              className="transition-transform hover:scale-110"
+            >
+              <Star
+                size={18}
+                className={v <= active ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}
+              />
             </button>
           ))}
         </div>
