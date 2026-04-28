@@ -43,11 +43,41 @@ function timeAgo(ts) {
   return `${Math.floor(days / 30)}mo ago`
 }
 
+// Words too generic to count as meaningful resume matches
+const STOPWORDS = new Set([
+  'the','and','for','are','with','this','that','have','from','not','but','our',
+  'you','all','can','her','was','one','been','has','more','also','into','its',
+  'they','had','what','were','will','would','there','their','which','when',
+  'intern','internship','summer','experience','role','team','work','working',
+  'strong','good','great','new','use','using','used','help','base','based',
+  'including','related','across','within','multiple','various','able','ability',
+  'preferred','required','plus','year','years'
+])
+
+const CANADA_MARKERS = [
+  'canada','toronto','vancouver','montreal','ottawa','calgary','edmonton',
+  'waterloo','ontario','british columbia','quebec','alberta','manitoba',
+  'saskatchewan',', on',' on,','bc,',', bc',', qc',', ab',', mb',', sk',
+  'nova scotia','new brunswick',
+]
+
+function isCanadaOnly(locations) {
+  if (!locations?.length) return false
+  return locations.every(loc => CANADA_MARKERS.some(m => loc.toLowerCase().includes(m)))
+}
+
 function scoreResume(resumeText, job) {
-  const words = new Set(resumeText.toLowerCase().match(/\b[a-z]{3,}\b/g) || [])
-  const jobWords = (job.title + ' ' + job.company_name).toLowerCase().match(/\b[a-z]{3,}\b/g) || []
-  const matches = jobWords.filter(w => words.has(w)).length
-  return matches / Math.max(jobWords.length, 1)
+  const resumeWords = new Set(
+    (resumeText.toLowerCase().match(/\b[a-z+#]{2,}\b/g) || []).filter(w => !STOPWORDS.has(w))
+  )
+  // Extract meaningful terms from job title only (not company name — too noisy)
+  const jobTerms = (job.title).toLowerCase().match(/\b[a-z+#]{2,}\b/g) || []
+  const meaningful = jobTerms.filter(w => !STOPWORDS.has(w))
+  if (meaningful.length === 0) return 0
+  const matches = meaningful.filter(w => resumeWords.has(w)).length
+  // Require at least 2 real matches to avoid false positives
+  if (matches < 2) return 0
+  return matches / meaningful.length
 }
 
 async function extractPdfText(file) {
@@ -281,6 +311,7 @@ export default function Opportunities() {
   const [activeCategory, setActiveCategory] = useState('swe')
   const [query, setQuery] = useState('')
   const [sponsorOnly, setSponsorOnly] = useState(false)
+  const [usOnly, setUsOnly] = useState(true)
   const [visibleCount, setVisibleCount] = useState(30)
   const [resume, setResume] = useState('')
   const [resumeLoaded, setResumeLoaded] = useState(false)
@@ -321,18 +352,19 @@ export default function Opportunities() {
   const filtered = useMemo(() => all.filter(r => {
     if (r.category !== activeCategory) return false
     if (sponsorOnly && r.sponsorship !== 'Offers Sponsorship') return false
+    if (usOnly && isCanadaOnly(r.locations)) return false
     if (query) {
       const q = query.toLowerCase()
       return r.company_name?.toLowerCase().includes(q) || r.title?.toLowerCase().includes(q) || r.locations?.some(l => l.toLowerCase().includes(q))
     }
     return true
-  }), [all, activeCategory, query, sponsorOnly])
+  }), [all, activeCategory, query, sponsorOnly, usOnly])
 
   // Score + sort jobs by resume match
   const scoredJobs = useMemo(() => {
     if (!resume) return filtered.map(j => ({ ...j, score: 0, recommended: false }))
     return filtered
-      .map(j => { const score = scoreResume(resume, j); return { ...j, score, recommended: score > 0.25 } })
+      .map(j => { const score = scoreResume(resume, j); return { ...j, score, recommended: score >= 0.5 } })
       .sort((a, b) => b.score - a.score)
   }, [filtered, resume])
 
@@ -384,6 +416,10 @@ export default function Opportunities() {
               className="w-full bg-white border border-slate-200 focus:border-amber-400 rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-colors shadow-sm" />
             {query && <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"><X size={15} /></button>}
           </div>
+          <button onClick={() => setUsOnly(!usOnly)}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all shadow-sm ${usOnly ? 'bg-blue-500 border-blue-500 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}>
+            🇺🇸 US only
+          </button>
           <button onClick={() => setSponsorOnly(!sponsorOnly)}
             className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all shadow-sm ${sponsorOnly ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}>
             <Globe size={15} />Sponsors visa
