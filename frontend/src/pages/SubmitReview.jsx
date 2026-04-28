@@ -96,6 +96,20 @@ function CompanySearch({ value, onChange, hasError }) {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState(value || '')
   const [customName, setCustomName] = useState('')
+  const [allCompanies, setAllCompanies] = useState(COMPANIES)
+
+  // Load live company list from Supabase on mount
+  useState(() => {
+    supabase.from('companies').select('name').order('name').then(({ data }) => {
+      if (data?.length) {
+        const dbNames = data.map(c => c.name)
+        const merged = [...new Set([...dbNames, ...COMPANIES])].sort((a, b) =>
+          a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b)
+        )
+        setAllCompanies(merged)
+      }
+    })
+  }, [])
 
   const handleInput = (e) => {
     const q = e.target.value
@@ -104,7 +118,7 @@ function CompanySearch({ value, onChange, hasError }) {
     onChange('')
     setSuggestions(
       q.length >= 1
-        ? COMPANIES.filter(c => c.toLowerCase().includes(q.toLowerCase())).slice(0, 8)
+        ? allCompanies.filter(c => c.toLowerCase().includes(q.toLowerCase())).slice(0, 8)
         : []
     )
     setOpen(true)
