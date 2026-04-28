@@ -1,16 +1,44 @@
-import { Star, ThumbsUp, RotateCcw, MapPin } from 'lucide-react'
+import { Star, ThumbsUp, ThumbsDown, RotateCcw, MapPin } from 'lucide-react'
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 export default function ReviewCard({ review }) {
   const [helpful, setHelpful] = useState(review.helpful_count || 0)
-  const [voted, setVoted] = useState(false)
+  const [dislikes, setDislikes] = useState(review.dislike_count || 0)
+  const [vote, setVote] = useState(null) // null | 'like' | 'dislike'
 
-  const handleHelpful = async () => {
-    if (voted) return
-    setHelpful(h => h + 1)
-    setVoted(true)
-    await supabase.rpc('increment_helpful', { review_id: review.id })
+  const handleLike = async () => {
+    if (vote === 'like') {
+      // undo like
+      setHelpful(h => h - 1)
+      setVote(null)
+      await supabase.rpc('decrement_helpful', { review_id: review.id })
+    } else {
+      if (vote === 'dislike') {
+        setDislikes(d => d - 1)
+        await supabase.rpc('decrement_dislike', { review_id: review.id })
+      }
+      setHelpful(h => h + 1)
+      setVote('like')
+      await supabase.rpc('increment_helpful', { review_id: review.id })
+    }
+  }
+
+  const handleDislike = async () => {
+    if (vote === 'dislike') {
+      // undo dislike
+      setDislikes(d => d - 1)
+      setVote(null)
+      await supabase.rpc('decrement_dislike', { review_id: review.id })
+    } else {
+      if (vote === 'like') {
+        setHelpful(h => h - 1)
+        await supabase.rpc('decrement_helpful', { review_id: review.id })
+      }
+      setDislikes(d => d + 1)
+      setVote('dislike')
+      await supabase.rpc('increment_dislike', { review_id: review.id })
+    }
   }
 
   const stars = Array.from({ length: 5 }, (_, i) => i < Math.round(review.rating || 0))
@@ -77,16 +105,26 @@ export default function ReviewCard({ review }) {
             <span key={tech} className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md text-xs">{tech}</span>
           ))}
         </div>
-        <button
-          onClick={handleHelpful}
-          className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${
-            voted ? 'text-amber-600' : 'text-slate-400 hover:text-slate-600'
-          }`}
-        >
-          <ThumbsUp size={13} />
-          {helpful > 0 && <span>{helpful}</span>}
-          {!voted && <span>Helpful</span>}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleLike}
+            className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${
+              vote === 'like' ? 'text-amber-600' : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <ThumbsUp size={13} className={vote === 'like' ? 'fill-amber-400' : ''} />
+            {helpful > 0 && <span>{helpful}</span>}
+          </button>
+          <button
+            onClick={handleDislike}
+            className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${
+              vote === 'dislike' ? 'text-red-500' : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <ThumbsDown size={13} className={vote === 'dislike' ? 'fill-red-400' : ''} />
+            {dislikes > 0 && <span>{dislikes}</span>}
+          </button>
+        </div>
       </div>
     </div>
   )
