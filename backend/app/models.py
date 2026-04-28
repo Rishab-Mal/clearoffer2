@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Text, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Text, ForeignKey, JSON, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -111,3 +111,30 @@ class EmailVerificationToken(Base):
     token = Column(String, unique=True, nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     used = Column(Boolean, default=False)
+
+
+class Opportunity(Base):
+    __tablename__ = "opportunities"
+
+    id = Column(String, primary_key=True)  # Simplify UUID
+    company_name = Column(String, nullable=False, index=True)
+    title = Column(String, nullable=False)
+    bucket = Column(String, nullable=False, index=True)
+    category_raw = Column(String)
+    locations = Column(JSON, default=list)
+    terms = Column(JSON, default=list)
+    degrees = Column(JSON, default=list)
+    sponsorship = Column(String)
+    url = Column(String)
+    company_url = Column(String)
+    source = Column(String)
+    active = Column(Boolean, default=True, index=True)
+    is_visible = Column(Boolean, default=True)
+    date_posted = Column(Integer, index=True)
+    date_updated = Column(Integer)
+    first_seen_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_seen_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        Index("ix_opps_listing", "bucket", "active", "date_posted"),
+    )
