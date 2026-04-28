@@ -1,5 +1,5 @@
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY
-const MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'anthropic/claude-3.5-haiku-20241022'
+const MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'openai/gpt-4o-mini'
 const BASE = 'https://openrouter.ai/api/v1'
 
 export async function chat(prompt, maxTokens = 1024) {
@@ -17,7 +17,10 @@ export async function chat(prompt, maxTokens = 1024) {
       messages: [{ role: 'user', content: prompt }],
     }),
   })
-  if (!res.ok) throw new Error(`OpenRouter error: ${res.status}`)
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`OpenRouter error: ${res.status} — ${body}`)
+  }
   const data = await res.json()
   return data.choices[0].message.content
 }
