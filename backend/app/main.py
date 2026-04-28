@@ -1,12 +1,25 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
-from .routes import auth, companies, reviews, users, ai
+from .routes import auth, companies, reviews, users, ai, opportunities
 from .config import settings
+from .scheduler import scheduler, setup_jobs
 
-Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="ClearOffer API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    setup_jobs()
+    scheduler.start()
+    try:
+        yield
+    finally:
+        scheduler.shutdown(wait=False)
+
+
+app = FastAPI(title="ClearOffer API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,6 +34,7 @@ app.include_router(companies.router, prefix="/api")
 app.include_router(reviews.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(ai.router, prefix="/api")
+app.include_router(opportunities.router, prefix="/api")
 
 
 @app.get("/api/health")

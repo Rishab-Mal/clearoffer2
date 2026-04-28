@@ -8,6 +8,8 @@ class Settings(BaseSettings):
 
     openrouter_api_key: str = ""
     openrouter_model: str = "anthropic/claude-3.5-sonnet"
+    supabase_url: str = ""
+    supabase_jwt_secret: str = ""
 
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
