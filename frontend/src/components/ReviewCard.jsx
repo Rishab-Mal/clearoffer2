@@ -1,5 +1,5 @@
 import { Star, ThumbsUp, ThumbsDown, RotateCcw, MapPin } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
 export default function ReviewCard({ review }) {
@@ -7,37 +7,62 @@ export default function ReviewCard({ review }) {
   const [dislikes, setDislikes] = useState(review.dislike_count || 0)
   const [vote, setVote] = useState(null) // null | 'like' | 'dislike'
 
+  // Load persisted vote on mount
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      supabase.from('review_votes')
+        .select('vote')
+        .eq('user_id', user.id)
+        .eq('review_id', review.id)
+        .single()
+        .then(({ data }) => { if (data) setVote(data.vote) })
+    })
+  }, [review.id])
+
+  const persistVote = async (newVote) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    if (newVote) {
+      await supabase.from('review_votes').upsert({ user_id: user.id, review_id: review.id, vote: newVote })
+    } else {
+      await supabase.from('review_votes').delete().eq('user_id', user.id).eq('review_id', review.id)
+    }
+  }
+
   const handleLike = async () => {
     if (vote === 'like') {
-      // undo like
       setHelpful(h => h - 1)
       setVote(null)
-      await supabase.rpc('decrement_helpful', { review_id: review.id })
+      persistVote(null)
+      supabase.rpc('decrement_helpful', { review_id: review.id })
     } else {
       if (vote === 'dislike') {
         setDislikes(d => d - 1)
-        await supabase.rpc('decrement_dislike', { review_id: review.id })
+        supabase.rpc('decrement_dislike', { review_id: review.id })
       }
       setHelpful(h => h + 1)
       setVote('like')
-      await supabase.rpc('increment_helpful', { review_id: review.id })
+      persistVote('like')
+      supabase.rpc('increment_helpful', { review_id: review.id })
     }
   }
 
   const handleDislike = async () => {
     if (vote === 'dislike') {
-      // undo dislike
       setDislikes(d => d - 1)
       setVote(null)
-      await supabase.rpc('decrement_dislike', { review_id: review.id })
+      persistVote(null)
+      supabase.rpc('decrement_dislike', { review_id: review.id })
     } else {
       if (vote === 'like') {
         setHelpful(h => h - 1)
-        await supabase.rpc('decrement_helpful', { review_id: review.id })
+        supabase.rpc('decrement_helpful', { review_id: review.id })
       }
       setDislikes(d => d + 1)
       setVote('dislike')
-      await supabase.rpc('increment_dislike', { review_id: review.id })
+      persistVote('dislike')
+      supabase.rpc('increment_dislike', { review_id: review.id })
     }
   }
 
