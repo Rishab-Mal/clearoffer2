@@ -94,8 +94,6 @@ function CompanySearch({ value, onChange, hasError }) {
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [open, setOpen] = useState(false)
-  const [selected, setSelected] = useState(value || '')
-  const [customName, setCustomName] = useState('')
   const [allCompanies, setAllCompanies] = useState(COMPANIES)
 
   // Load live company list from Supabase on mount
@@ -115,13 +113,20 @@ function CompanySearch({ value, onChange, hasError }) {
     const q = e.target.value
     setQuery(q)
     setSelected('')
-    onChange('')
-    setSuggestions(
-      q.length >= 1
-        ? allCompanies.filter(c => c.toLowerCase().includes(q.toLowerCase())).slice(0, 8)
-        : []
-    )
+    onChange(q.trim())  // accept typed value immediately
+    const matches = q.length >= 1
+      ? allCompanies.filter(c => c !== 'Other' && c.toLowerCase().includes(q.toLowerCase())).slice(0, 8)
+      : []
+    setSuggestions(matches)
     setOpen(true)
+  }
+
+  const handleBlur = () => {
+    setTimeout(() => {
+      setOpen(false)
+      // if user typed something without picking from dropdown, keep it
+      if (query.trim() && !selected) onChange(query.trim())
+    }, 150)
   }
 
   const select = (company) => {
@@ -129,16 +134,7 @@ function CompanySearch({ value, onChange, hasError }) {
     setQuery(company)
     setSuggestions([])
     setOpen(false)
-    if (company === 'Other') {
-      onChange('')
-    } else {
-      onChange(company)
-    }
-  }
-
-  const handleCustom = (e) => {
-    setCustomName(e.target.value)
-    onChange(e.target.value)
+    onChange(company)
   }
 
   return (
@@ -149,11 +145,11 @@ function CompanySearch({ value, onChange, hasError }) {
           value={query}
           onChange={handleInput}
           onFocus={() => { if (suggestions.length) setOpen(true) }}
-          onBlur={() => setTimeout(() => setOpen(false), 150)}
-          placeholder="Search company name..."
+          onBlur={handleBlur}
+          placeholder="Search or type company name..."
           autoComplete="off"
           className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-colors ${
-            hasError ? 'border-red-400' : selected && selected !== 'Other' ? 'border-amber-400' : 'border-slate-200 focus:border-amber-400'
+            hasError ? 'border-red-400' : query.trim() ? 'border-amber-400' : 'border-slate-200 focus:border-amber-400'
           }`}
         />
         {open && suggestions.length > 0 && (
@@ -162,9 +158,7 @@ function CompanySearch({ value, onChange, hasError }) {
               <li
                 key={c}
                 onMouseDown={() => select(c)}
-                className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${
-                  c === 'Other' ? 'text-slate-400 italic border-t border-slate-100 hover:bg-slate-50' : 'text-slate-700 hover:bg-amber-500 hover:text-black'
-                }`}
+                className="px-4 py-2.5 text-sm cursor-pointer transition-colors text-slate-700 hover:bg-amber-500 hover:text-black"
               >
                 {c}
               </li>
@@ -172,16 +166,6 @@ function CompanySearch({ value, onChange, hasError }) {
           </ul>
         )}
       </div>
-      {selected === 'Other' && (
-        <input
-          type="text"
-          value={customName}
-          onChange={handleCustom}
-          placeholder="Type the company name"
-          autoFocus
-          className="w-full border border-amber-400 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500"
-        />
-      )}
     </div>
   )
 }
