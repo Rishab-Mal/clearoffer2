@@ -3,7 +3,22 @@ import { useDropzone } from 'react-dropzone'
 import { supabase } from '../lib/supabase'
 import { chat, parseJSON } from '../lib/openrouter'
 import Navbar from '../components/Navbar'
-import { Upload, Zap, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Upload, Zap, CheckCircle, XCircle, AlertCircle, FileText } from 'lucide-react'
+import * as pdfjsLib from 'pdfjs-dist'
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+
+async function extractPdfText(file) {
+  const arrayBuffer = await file.arrayBuffer()
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  let text = ''
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i)
+    const content = await page.getTextContent()
+    text += content.items.map(item => item.str).join(' ') + '\n'
+  }
+  return text.trim()
+}
 
 const ROLES = ['Software Engineer Intern', 'PM Intern', 'Data Science Intern', 'ML Engineer Intern',
   'Design Intern', 'DevOps/Infrastructure Intern', 'Finance Intern', 'Research Intern']
@@ -58,12 +73,30 @@ export default function ResumeFit() {
     setCompaniesLoaded(true)
   }
 
-  const onDrop = useCallback(files => {
+  const [fileLoading, setFileLoading] = useState(false)
+  const [fileName, setFileName] = useState('')
+
+  const onDrop = useCallback(async (files) => {
     const file = files[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = e => setResumeText(e.target.result)
-    reader.readAsText(file)
+    setFileLoading(true)
+    setFileName(file.name)
+    setError('')
+    try {
+      if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+        const text = await extractPdfText(file)
+        setResumeText(text.slice(0, 5000))
+      } else {
+        const reader = new FileReader()
+        reader.onload = e => setResumeText((e.target.result || '').slice(0, 5000))
+        reader.readAsText(file)
+      }
+    } catch {
+      setError('Could not read the PDF. Try pasting your resume as text instead.')
+      setFileName('')
+    } finally {
+      setFileLoading(false)
+    }
   }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -129,12 +162,31 @@ Be honest and specific. Return ONLY valid JSON.`
               <h2 className="font-bold text-slate-900 mb-4">Your resume</h2>
               <div
                 {...getRootProps()}
-                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors mb-4 ${isDragActive ? 'border-amber-400 bg-amber-50' : 'border-slate-200 hover:border-amber-300'}`}
+                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors mb-4 ${
+                  isDragActive ? 'border-amber-400 bg-amber-50'
+                  : fileName ? 'border-green-400 bg-green-50'
+                  : 'border-slate-200 hover:border-amber-300'
+                }`}
               >
                 <input {...getInputProps()} />
-                <Upload size={24} className="mx-auto text-slate-400 mb-2" />
-                <p className="text-sm font-medium text-slate-600">Drop your resume here, or click to upload</p>
-                <p className="text-xs text-slate-400 mt-1">.txt or .pdf · 5000 char max</p>
+                {fileLoading ? (
+                  <>
+                    <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">Reading PDF...</p>
+                  </>
+                ) : fileName ? (
+                  <>
+                    <FileText size={24} className="mx-auto text-green-500 mb-2" />
+                    <p className="text-sm font-medium text-green-700">{fileName}</p>
+                    <p className="text-xs text-slate-400 mt-1">Click to replace</p>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={24} className="mx-auto text-slate-400 mb-2" />
+                    <p className="text-sm font-medium text-slate-600">Drop your resume here, or click to upload</p>
+                    <p className="text-xs text-slate-400 mt-1">.txt or .pdf · 5000 char max</p>
+                  </>
+                )}
               </div>
               <p className="text-xs text-slate-500 text-center mb-3">— or paste it below —</p>
               <textarea
