@@ -5,8 +5,9 @@ import { chat, parseJSON } from '../lib/openrouter'
 import Navbar from '../components/Navbar'
 import { Upload, Zap, CheckCircle, XCircle, AlertCircle, FileText } from 'lucide-react'
 import * as pdfjsLib from 'pdfjs-dist'
+import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl
 
 async function extractPdfText(file) {
   const arrayBuffer = await file.arrayBuffer()
