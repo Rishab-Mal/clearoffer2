@@ -9,6 +9,7 @@ import SubmitReview from './pages/SubmitReview'
 import ResumeFit from './pages/ResumeFit'
 import InterviewPrep from './pages/InterviewPrep'
 import Profile from './pages/Profile'
+import ResetPassword from './pages/ResetPassword'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
       <Route path="/company/:id" element={<ProtectedRoute><Company /></ProtectedRoute>} />

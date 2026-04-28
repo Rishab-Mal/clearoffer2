@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import { Eye, EyeOff, ArrowLeft, Mail, CheckCircle, AlertCircle } from 'lucide-react'
 
 const UNIVERSITIES = [
@@ -42,7 +43,7 @@ function validateEdu(email) {
 export default function Auth() {
   const [searchParams] = useSearchParams()
   const [mode, setMode] = useState(searchParams.get('mode') === 'login' ? 'login' : 'signup')
-  const [screen, setScreen] = useState('form') // 'form' | 'verify'
+  const [screen, setScreen] = useState('form') // 'form' | 'verify' | 'forgot' | 'forgot-sent'
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -93,6 +94,8 @@ export default function Auth() {
   }
 
   if (screen === 'verify') return <VerifyScreen email={form.email} onResend={() => {}} />
+  if (screen === 'forgot') return <ForgotScreen onBack={() => setScreen('form')} onSent={() => setScreen('forgot-sent')} />
+  if (screen === 'forgot-sent') return <ForgotSentScreen onBack={() => setScreen('form')} />
 
   return (
     <div className="min-h-screen bg-lantern-bg flex flex-col">
@@ -223,7 +226,14 @@ export default function Auth() {
 
               {/* Password */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Password</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-400">Password</label>
+                  {mode === 'login' && (
+                    <button type="button" onClick={() => setScreen('forgot')} className="text-xs text-amber-500 hover:text-amber-400 font-medium">
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
                 <div className="relative">
                   <input
                     type={showPass ? 'text' : 'password'}
@@ -269,6 +279,78 @@ export default function Auth() {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function ForgotScreen({ onBack, onSent }) {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    if (err) { setError(err.message); setLoading(false); return }
+    onSent()
+  }
+
+  return (
+    <div className="min-h-screen bg-lantern-bg flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-md bg-lantern-card border border-lantern-border rounded-2xl p-8">
+        <div className="flex items-center gap-2 mb-6">
+          <span className="text-amber-500">✦</span>
+          <span className="font-black text-white text-lg tracking-tight">LANTERN</span>
+        </div>
+        <h2 className="text-2xl font-black text-white mb-1">Reset password</h2>
+        <p className="text-slate-500 text-sm mb-6">Enter your .edu email and we'll send a reset link.</p>
+        {error && (
+          <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3 mb-4">
+            <AlertCircle size={15} />{error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="you@university.edu"
+            required
+            className="w-full bg-lantern-bg border border-lantern-border focus:border-amber-500 rounded-xl px-4 py-3 text-white placeholder-slate-600 text-sm outline-none transition-colors"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-bold py-3.5 rounded-xl transition-colors text-sm"
+          >
+            {loading ? 'Sending...' : 'Send reset link'}
+          </button>
+        </form>
+        <button onClick={onBack} className="mt-4 flex items-center gap-2 text-slate-500 hover:text-slate-300 text-sm transition-colors">
+          <ArrowLeft size={14} />Back to login
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function ForgotSentScreen({ onBack }) {
+  return (
+    <div className="min-h-screen bg-lantern-bg flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-md bg-lantern-card border border-lantern-border rounded-2xl p-8 text-center">
+        <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-5">
+          <Mail className="text-amber-500" size={28} />
+        </div>
+        <h2 className="text-2xl font-black text-white mb-2">Check your inbox</h2>
+        <p className="text-slate-400 text-sm mb-6">We sent a reset link to your email. Click it to set a new password.</p>
+        <button onClick={onBack} className="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-300 text-sm transition-colors mx-auto">
+          <ArrowLeft size={14} />Back to login
+        </button>
       </div>
     </div>
   )
