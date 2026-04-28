@@ -314,7 +314,7 @@ export default function SubmitReview() {
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">Internship year</label>
                   <select value={form.internship_year} onChange={setE('internship_year')} className="w-full border border-slate-200 focus:border-amber-400 rounded-xl px-4 py-3 text-sm outline-none">
-                    {[2022, 2023, 2024, 2025].map(y => <option key={y}>{y}</option>)}
+                    {[2022, 2023, 2024, 2025, 2026].map(y => <option key={y}>{y}</option>)}
                   </select>
                 </div>
               </div>
