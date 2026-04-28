@@ -102,7 +102,7 @@ export default function Auth() {
       <div className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto w-full">
         <Link to="/" className="flex items-center gap-2">
           <span className="text-amber-500">✦</span>
-          <span className="font-black text-white text-lg tracking-tight">LANTERN</span>
+          <span className="font-black text-white text-lg tracking-tight">CLEAROFFER</span>
         </Link>
       </div>
 
@@ -115,7 +115,7 @@ export default function Auth() {
             <p className="text-slate-500 text-sm mb-6">
               {mode === 'signup'
                 ? 'Join thousands of students getting the real scoop on internships.'
-                : 'Log in to your Lantern account.'}
+                : 'Log in to your ClearOffer account.'}
             </p>
 
             {/* Mode toggle */}
@@ -162,7 +162,7 @@ export default function Auth() {
                 {eduError && (
                   <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1">
                     <AlertCircle size={11} />
-                    Lantern is only available to students with .edu emails.
+                    ClearOffer is only available to students with .edu emails.
                   </p>
                 )}
               </div>
@@ -305,7 +305,7 @@ function ForgotScreen({ onBack, onSent }) {
       <div className="w-full max-w-md bg-lantern-card border border-lantern-border rounded-2xl p-8">
         <div className="flex items-center gap-2 mb-6">
           <span className="text-amber-500">✦</span>
-          <span className="font-black text-white text-lg tracking-tight">LANTERN</span>
+          <span className="font-black text-white text-lg tracking-tight">CLEAROFFER</span>
         </div>
         <h2 className="text-2xl font-black text-white mb-1">Reset password</h2>
         <p className="text-slate-500 text-sm mb-6">Enter your .edu email and we'll send a reset link.</p>

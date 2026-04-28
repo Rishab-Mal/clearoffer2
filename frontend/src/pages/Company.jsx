@@ -175,7 +175,7 @@ export default function Company() {
 
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6">
               <h2 className="font-bold text-slate-900 mb-2">Want a personalized study plan?</h2>
-              <p className="text-slate-600 text-sm mb-4">Lantern AI generates a week-by-week plan based on what past interns at {company.name} actually reported.</p>
+              <p className="text-slate-600 text-sm mb-4">ClearOffer AI generates a week-by-week plan based on what past interns at {company.name} actually reported.</p>
               <Link to={`/interview-prep/${id}`} className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm px-5 py-2.5 rounded-xl transition-colors">
                 <Cpu size={14} />Get my study plan <ArrowRight size={14} />
               </Link>

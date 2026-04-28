@@ -22,20 +22,20 @@ async def send_verification_email(email: str, token: str):
         from email.mime.multipart import MIMEMultipart
 
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = "Verify your Lantern account"
+        msg["Subject"] = "Verify your ClearOffer account"
         msg["From"] = settings.email_from
         msg["To"] = email
 
         verify_url = f"{settings.frontend_url}/auth/verify?token={token}"
         html = f"""
         <div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;padding:40px 20px">
-          <h1 style="font-size:24px;font-weight:900;color:#0F172A">✦ LANTERN</h1>
+          <h1 style="font-size:24px;font-weight:900;color:#0F172A">✦ CLEAROFFER</h1>
           <h2 style="font-size:18px;font-weight:700;color:#0F172A;margin-top:24px">Verify your email</h2>
-          <p style="color:#64748B;font-size:14px">Click the button below to activate your Lantern account.</p>
+          <p style="color:#64748B;font-size:14px">Click the button below to activate your ClearOffer account.</p>
           <a href="{verify_url}" style="display:inline-block;margin-top:20px;background:#F59E0B;color:#000;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;font-size:14px">
             Verify email
           </a>
-          <p style="color:#94A3B8;font-size:12px;margin-top:24px">If you didn't create a Lantern account, ignore this email.</p>
+          <p style="color:#94A3B8;font-size:12px;margin-top:24px">If you didn't create a ClearOffer account, ignore this email.</p>
         </div>
         """
         msg.attach(MIMEText(html, "html"))

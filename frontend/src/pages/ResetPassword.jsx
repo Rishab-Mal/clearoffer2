@@ -59,7 +59,7 @@ export default function ResetPassword() {
       <div className="bg-lantern-card border border-lantern-border rounded-2xl p-8 max-w-md w-full">
         <div className="flex items-center gap-2 mb-6">
           <span className="text-amber-500">✦</span>
-          <span className="font-black text-white text-lg tracking-tight">LANTERN</span>
+          <span className="font-black text-white text-lg tracking-tight">CLEAROFFER</span>
         </div>
         <h1 className="text-2xl font-black text-white mb-1">Set new password</h1>
         <p className="text-slate-500 text-sm mb-6">Choose a strong password for your account.</p>

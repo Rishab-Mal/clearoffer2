@@ -49,7 +49,7 @@ export default function Landing() {
       <nav className="flex items-center justify-between px-6 md:px-12 py-5 max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
           <span className="text-amber-500 text-xl">✦</span>
-          <span className="font-black text-white text-lg tracking-tight">LANTERN</span>
+          <span className="font-black text-white text-lg tracking-tight">CLEAROFFER</span>
         </div>
         <div className="flex items-center gap-3">
           <Link to="/auth?mode=login" className="text-sm text-slate-400 hover:text-white transition-colors font-medium px-3 py-2">
@@ -95,7 +95,7 @@ export default function Landing() {
       {/* Feature Trio */}
       <section className="bg-lantern-card border-y border-lantern-border py-20 px-6">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-center text-sm font-semibold text-slate-500 uppercase tracking-widest mb-12">What Lantern gives you</h2>
+          <h2 className="text-center text-sm font-semibold text-slate-500 uppercase tracking-widest mb-12">What ClearOffer gives you</h2>
           <div className="grid md:grid-cols-3 gap-6">
             <FeatureCard
               icon={<Cpu className="text-amber-500" size={24} />}
@@ -195,16 +195,16 @@ export default function Landing() {
       <footer className="py-10 px-6 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <span className="text-amber-500">✦</span>
-          <span className="font-black text-slate-500 text-sm tracking-tight">LANTERN</span>
+          <span className="font-black text-slate-500 text-sm tracking-tight">CLEAROFFER</span>
         </div>
         <div className="flex items-center gap-6 text-sm text-slate-600">
           <a href="#" className="hover:text-slate-400 transition-colors">About</a>
           <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-slate-400 transition-colors flex items-center gap-1">
             <Github size={14} />GitHub
           </a>
-          <a href="mailto:hello@lantern.app" className="hover:text-slate-400 transition-colors">Contact</a>
+          <a href="mailto:hello@clearoffer.org" className="hover:text-slate-400 transition-colors">Contact</a>
         </div>
-        <p className="text-slate-700 text-xs">© 2025 Lantern</p>
+        <p className="text-slate-700 text-xs">© 2025 ClearOffer</p>
       </footer>
     </div>
   )
