@@ -189,10 +189,22 @@ function ResumePanel({ resume, onSave }) {
 }
 
 // ── Tailor modal ──────────────────────────────────────────────────────────────
+function computeModalScore(resumeText, job) {
+  const words = new Set(
+    (resumeText.toLowerCase().match(/\b[a-z+#]{2,}\b/g) || []).filter(w => !STOPWORDS.has(w))
+  )
+  const terms = (job.title).toLowerCase().match(/\b[a-z+#]{2,}\b/g) || []
+  const meaningful = terms.filter(w => !STOPWORDS.has(w))
+  if (!meaningful.length) return 25
+  const matches = meaningful.filter(w => words.has(w)).length
+  return Math.min(Math.round((matches / meaningful.length) * 100), 98)
+}
+
 function TailorModal({ job, resume, onClose }) {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const matchScore = computeModalScore(resume, job)
 
   useEffect(() => {
     const generate = async () => {
@@ -206,12 +218,11 @@ Student resume:
 ${resume.slice(0, 4000)}
 ---
 
-Analyze the fit and give specific tailoring advice. Return JSON with:
-- match_score: integer 0-100
-- summary: 1 sentence on overall fit
-- strengths: array of 2-3 strings (what already aligns well)
-- improvements: array of 3-4 specific bullet point rewrites or additions
-- keywords: array of 6-8 keywords to weave in
+Give specific tailoring advice. Return JSON with:
+- summary: 1 honest sentence on overall fit for this specific role
+- strengths: array of 2-3 specific strings (what already aligns well with this role)
+- improvements: array of 3-4 specific bullet point rewrites or additions for this role
+- keywords: array of 6-8 keywords to weave in based on this company and role
 
 Return ONLY valid JSON.`
       try {
@@ -226,8 +237,8 @@ Return ONLY valid JSON.`
     generate()
   }, [])
 
-  const scoreColor = result ? (result.match_score >= 70 ? 'text-green-600' : result.match_score >= 40 ? 'text-amber-600' : 'text-red-500') : ''
-  const scoreBg = result ? (result.match_score >= 70 ? 'bg-green-50 border-green-200' : result.match_score >= 40 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200') : ''
+  const scoreColor = matchScore >= 60 ? 'text-green-600' : matchScore >= 35 ? 'text-amber-600' : 'text-red-500'
+  const scoreBg = matchScore >= 60 ? 'bg-green-50 border-green-200' : matchScore >= 35 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4" onClick={onClose}>
@@ -252,7 +263,7 @@ Return ONLY valid JSON.`
             <div className="space-y-5">
               {/* Score */}
               <div className={`rounded-xl border p-4 flex items-center gap-4 ${scoreBg}`}>
-                <p className={`text-4xl font-black ${scoreColor}`}>{result.match_score}</p>
+                <p className={`text-4xl font-black ${scoreColor}`}>{matchScore}</p>
                 <div>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Match score</p>
                   <p className="text-sm text-slate-700 mt-0.5">{result.summary}</p>
