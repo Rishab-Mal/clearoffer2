@@ -134,14 +134,14 @@ export default function ReviewCard({ review }) {
             <span key={tech} className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md text-xs">{tech}</span>
           ))}
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={handleLike} className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${vote === 'like' ? 'text-amber-600' : 'text-slate-400 hover:text-slate-600'}`}>
-            <ThumbsUp size={13} className={vote === 'like' ? 'fill-amber-400' : ''} />
-            {helpful > 0 && <span>{helpful}</span>}
+        <div className="flex items-center gap-4">
+          <button onClick={handleLike} className={`flex items-center gap-1.5 text-sm font-semibold transition-colors ${vote === 'like' ? 'text-amber-600' : 'text-slate-400 hover:text-slate-600'}`}>
+            <ThumbsUp size={15} className={vote === 'like' ? 'fill-amber-400' : ''} />
+            <span>{helpful}</span>
           </button>
-          <button onClick={handleDislike} className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${vote === 'dislike' ? 'text-red-500' : 'text-slate-400 hover:text-slate-600'}`}>
-            <ThumbsDown size={13} className={vote === 'dislike' ? 'fill-red-400' : ''} />
-            {dislikes > 0 && <span>{dislikes}</span>}
+          <button onClick={handleDislike} className={`flex items-center gap-1.5 text-sm font-semibold transition-colors ${vote === 'dislike' ? 'text-red-500' : 'text-slate-400 hover:text-slate-600'}`}>
+            <ThumbsDown size={15} className={vote === 'dislike' ? 'fill-red-400' : ''} />
+            <span>{dislikes}</span>
           </button>
           <button
             onClick={() => !reported && setShowReport(true)}
