@@ -1,6 +1,6 @@
 import { Star, ThumbsUp, RotateCcw, MapPin } from 'lucide-react'
 import { useState } from 'react'
-import api from '../lib/api'
+import { supabase } from '../lib/supabase'
 
 export default function ReviewCard({ review }) {
   const [helpful, setHelpful] = useState(review.helpful_count || 0)
@@ -8,11 +8,9 @@ export default function ReviewCard({ review }) {
 
   const handleHelpful = async () => {
     if (voted) return
-    try {
-      await api.post(`/api/reviews/${review.id}/helpful`)
-      setHelpful(h => h + 1)
-      setVoted(true)
-    } catch {}
+    setHelpful(h => h + 1)
+    setVoted(true)
+    await supabase.rpc('increment_helpful', { review_id: review.id })
   }
 
   const stars = Array.from({ length: 5 }, (_, i) => i < Math.round(review.rating || 0))
