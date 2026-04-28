@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /search
+Disallow: /company/
+Disallow: /submit-review
+Disallow: /resume-fit
+Disallow: /interview-prep/
+Disallow: /profile
+
+Sitemap: https://clearoffer.org/sitemap.xml
