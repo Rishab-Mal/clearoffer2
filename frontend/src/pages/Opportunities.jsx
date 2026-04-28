@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import {
   Briefcase, Code2, LineChart, Database, DollarSign, Cpu,
   ExternalLink, MapPin, Clock, Search, X, CheckCircle,
-  Globe, Upload, FileText, Sparkles, Wand2, Star, RefreshCw
+  Globe, Upload, FileText, Sparkles, Wand2, Star, Bell, BellOff
 } from 'lucide-react'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl
@@ -316,6 +316,7 @@ export default function Opportunities() {
   const [resume, setResume] = useState('')
   const [resumeLoaded, setResumeLoaded] = useState(false)
   const [tailorJob, setTailorJob] = useState(null)
+  const [alertedCompanies, setAlertedCompanies] = useState(new Set())
 
   // Load listings
   useEffect(() => {
@@ -331,13 +332,26 @@ export default function Opportunities() {
       .finally(() => setLoading(false))
   }, [])
 
-  // Load stored resume
+  // Load stored resume + alert subscriptions
   useEffect(() => {
     if (!user) return
     supabase.from('profiles').select('resume_text').eq('id', user.id).single()
       .then(({ data }) => { if (data?.resume_text) setResume(data.resume_text) })
       .finally(() => setResumeLoaded(true))
+    supabase.from('job_alerts').select('company_name').eq('user_id', user.id)
+      .then(({ data }) => setAlertedCompanies(new Set((data || []).map(a => a.company_name))))
   }, [user])
+
+  const toggleAlert = async (companyName) => {
+    const alerted = alertedCompanies.has(companyName)
+    if (alerted) {
+      await supabase.from('job_alerts').delete().eq('user_id', user.id).eq('company_name', companyName)
+      setAlertedCompanies(prev => { const s = new Set(prev); s.delete(companyName); return s })
+    } else {
+      await supabase.from('job_alerts').insert({ user_id: user.id, company_name: companyName })
+      setAlertedCompanies(prev => new Set([...prev, companyName]))
+    }
+  }
 
   const saveResume = async (text) => {
     await supabase.from('profiles').update({ resume_text: text }).eq('id', user.id)
@@ -444,7 +458,15 @@ export default function Opportunities() {
           <>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {visible.map(role => (
-                <RoleCard key={role.id} role={role} cat={activeCat} hasResume={!!resume} onTailor={() => setTailorJob(role)} />
+                <RoleCard
+                  key={role.id}
+                  role={role}
+                  cat={activeCat}
+                  hasResume={!!resume}
+                  onTailor={() => setTailorJob(role)}
+                  alerted={alertedCompanies.has(role.company_name)}
+                  onToggleAlert={() => toggleAlert(role.company_name)}
+                />
               ))}
             </div>
             {scoredJobs.length > visibleCount && (
@@ -466,7 +488,7 @@ export default function Opportunities() {
   )
 }
 
-function RoleCard({ role, cat, hasResume, onTailor }) {
+function RoleCard({ role, cat, hasResume, onTailor, alerted, onToggleAlert }) {
   const location = role.locations?.length > 1 ? `${role.locations[0]} +${role.locations.length - 1}` : role.locations?.[0]
   const sponsors = role.sponsorship === 'Offers Sponsorship'
   const isRecommended = role.recommended
@@ -488,9 +510,18 @@ function RoleCard({ role, cat, hasResume, onTailor }) {
           </div>
           <span className="font-semibold text-slate-900 text-sm truncate">{role.company_name}</span>
         </div>
-        <a href={role.url || '#'} target={role.url ? '_blank' : undefined} rel="noreferrer" className="text-slate-300 hover:text-amber-500 transition-colors flex-shrink-0">
-          <ExternalLink size={14} />
-        </a>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={e => { e.preventDefault(); onToggleAlert() }}
+            title={alerted ? `Stop alerts for ${role.company_name}` : `Get notified when ${role.company_name} posts new roles`}
+            className={`transition-colors ${alerted ? 'text-amber-500' : 'text-slate-300 hover:text-amber-400'}`}
+          >
+            {alerted ? <Bell size={14} className="fill-amber-400" /> : <Bell size={14} />}
+          </button>
+          <a href={role.url || '#'} target={role.url ? '_blank' : undefined} rel="noreferrer" className="text-slate-300 hover:text-amber-500 transition-colors">
+            <ExternalLink size={14} />
+          </a>
+        </div>
       </div>
 
       <p className="text-sm font-medium text-slate-800 leading-snug line-clamp-2">{role.title}</p>
