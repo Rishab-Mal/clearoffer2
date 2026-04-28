@@ -44,3 +44,6 @@ Thumbs.db
 # Misc
 *.pem
 *.key
+
+# Local Codex worktrees
+.claude/worktrees/
