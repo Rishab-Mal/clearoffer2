@@ -100,13 +100,43 @@ const UNIVERSITIES = [
 ].filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b))
 
 const MAJORS = [
-  'Computer Science', 'Electrical Engineering', 'Computer Engineering',
-  'Software Engineering', 'Data Science', 'Mechanical Engineering',
-  'Chemical Engineering', 'Civil Engineering', 'Biomedical Engineering',
-  'Information Systems', 'Mathematics', 'Statistics', 'Physics',
-  'Business Administration', 'Finance', 'Economics', 'Marketing',
-  'Design / HCI', 'Cognitive Science', 'Other',
-]
+  // Engineering
+  'Aerospace Engineering', 'Biomedical Engineering', 'Chemical Engineering',
+  'Civil Engineering', 'Computer Engineering', 'Computer Science',
+  'Data Science', 'Electrical Engineering', 'Environmental Engineering',
+  'Industrial Engineering', 'Materials Engineering', 'Mechanical Engineering',
+  'Nuclear Engineering', 'Software Engineering', 'Systems Engineering',
+
+  // Computing & Math
+  'Applied Mathematics', 'Artificial Intelligence', 'Cognitive Science',
+  'Computational Biology', 'Cryptography', 'Cybersecurity',
+  'Human-Computer Interaction', 'Information Science', 'Information Systems',
+  'Information Technology', 'Machine Learning', 'Mathematics',
+  'Robotics', 'Statistics',
+
+  // Natural Sciences
+  'Biochemistry', 'Biology', 'Chemistry', 'Environmental Science',
+  'Neuroscience', 'Physics', 'Psychology',
+
+  // Business
+  'Accounting', 'Business Administration', 'Economics', 'Entrepreneurship',
+  'Finance', 'Management', 'Marketing', 'Operations Management',
+  'Organizational Behavior', 'Supply Chain Management',
+
+  // Design & Arts
+  'Architecture', 'Design', 'Game Design', 'Graphic Design',
+  'Industrial Design', 'Product Design', 'UX Design',
+
+  // Social Sciences & Humanities
+  'Communications', 'English', 'History', 'International Relations',
+  'Linguistics', 'Philosophy', 'Political Science', 'Public Policy',
+  'Sociology',
+
+  'Other',
+].sort((a, b) => a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b))
+
+const majorTrie = new Trie()
+MAJORS.forEach(m => majorTrie.insert(m))
 
 const YEARS = [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030]
 
@@ -188,6 +218,58 @@ function UniversitySearch({ value, onChange }) {
               className="px-4 py-2.5 text-sm text-slate-300 hover:bg-amber-500 hover:text-black cursor-pointer transition-colors"
             >
               {u}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function MajorSearch({ value, onChange }) {
+  const [query, setQuery] = useState(value || '')
+  const [suggestions, setSuggestions] = useState([])
+  const [open, setOpen] = useState(false)
+  const [confirmed, setConfirmed] = useState(!!value)
+
+  const handleInput = (e) => {
+    const q = e.target.value
+    setQuery(q)
+    setConfirmed(false)
+    onChange('')
+    setSuggestions(q.length >= 1 ? majorTrie.search(q) : [])
+    setOpen(true)
+  }
+
+  const select = (major) => {
+    setQuery(major)
+    onChange(major)
+    setSuggestions([])
+    setOpen(false)
+    setConfirmed(true)
+  }
+
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        value={query}
+        onChange={handleInput}
+        onFocus={() => { if (suggestions.length) setOpen(true) }}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Search your major..."
+        autoComplete="off"
+        className={`w-full bg-lantern-bg border rounded-xl px-4 py-3 text-white placeholder-slate-600 text-sm outline-none transition-colors ${confirmed ? 'border-amber-500' : 'border-lantern-border focus:border-amber-500'}`}
+      />
+      {open && suggestions.length > 0 && (
+        <ul className="absolute z-50 w-full mt-1 bg-lantern-card border border-lantern-border rounded-xl overflow-hidden shadow-xl">
+          {suggestions.map(m => (
+            <li
+              key={m}
+              onMouseDown={() => select(m)}
+              className="px-4 py-2.5 text-sm text-slate-300 hover:bg-amber-500 hover:text-black cursor-pointer transition-colors"
+            >
+              {m}
             </li>
           ))}
         </ul>
@@ -358,15 +440,7 @@ export default function Auth() {
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-400 mb-1.5">Major</label>
-                      <select
-                        value={form.major}
-                        onChange={set('major')}
-                        required
-                        className="w-full bg-lantern-bg border border-lantern-border focus:border-amber-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors appearance-none"
-                      >
-                        <option value="" disabled>Major</option>
-                        {MAJORS.map(m => <option key={m} value={m}>{m}</option>)}
-                      </select>
+                      <MajorSearch value={form.major} onChange={v => { setForm(f => ({ ...f, major: v })); setError('') }} />
                     </div>
                   </div>
                 </>
