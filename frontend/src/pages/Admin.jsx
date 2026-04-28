@@ -39,10 +39,9 @@ export default function Admin() {
   }
 
   const deleteReview = async (reviewId) => {
-    await supabase.from('reviews').delete().eq('id', reviewId)
-    await supabase.from('reports').delete().eq('review_id', reviewId)
+    const { error } = await supabase.rpc('admin_delete_review', { target_review_id: reviewId })
+    if (error) { alert('Delete failed: ' + error.message); return }
     setReports(r => r.filter(rep => rep.review_id !== reviewId))
-    setActionDone(a => ({ ...a, [reviewId]: 'deleted' }))
   }
 
   const dismissReport = async (reportId) => {
