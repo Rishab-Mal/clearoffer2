@@ -7,7 +7,6 @@ import Dashboard from './pages/Dashboard'
 import Search from './pages/Search'
 import Company from './pages/Company'
 import SubmitReview from './pages/SubmitReview'
-import ResumeFit from './pages/ResumeFit'
 import InterviewPrep from './pages/InterviewPrep'
 import Opportunities from './pages/Opportunities'
 import Profile from './pages/Profile'
@@ -36,7 +35,6 @@ function App() {
         <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
         <Route path="/company/:id" element={<ProtectedRoute><Company /></ProtectedRoute>} />
         <Route path="/submit-review" element={<ProtectedRoute><SubmitReview /></ProtectedRoute>} />
-        <Route path="/resume-fit" element={<ProtectedRoute><ResumeFit /></ProtectedRoute>} />
         <Route path="/interview-prep/:id" element={<ProtectedRoute><InterviewPrep /></ProtectedRoute>} />
         <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
