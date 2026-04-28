@@ -4,6 +4,33 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { Eye, EyeOff, ArrowLeft, Mail, CheckCircle, AlertCircle } from 'lucide-react'
 
+class TrieNode {
+  constructor() { this.children = {}; this.words = [] }
+}
+class Trie {
+  constructor() { this.root = new TrieNode() }
+  insert(word) {
+    const key = word.toLowerCase()
+    for (let i = 0; i < key.length; i++) {
+      let node = this.root
+      for (const ch of key.slice(i)) {
+        if (!node.children[ch]) node.children[ch] = new TrieNode()
+        node = node.children[ch]
+        if (!node.words.includes(word)) node.words.push(word)
+      }
+    }
+  }
+  search(query) {
+    if (!query) return []
+    let node = this.root
+    for (const ch of query.toLowerCase()) {
+      if (!node.children[ch]) return []
+      node = node.children[ch]
+    }
+    return node.words.slice(0, 8)
+  }
+}
+
 const UNIVERSITIES = [
   // Ivies & top privates
   'MIT', 'Stanford University', 'Harvard University', 'Princeton University',
@@ -140,33 +167,6 @@ MAJORS.forEach(m => majorTrie.insert(m))
 
 const YEARS = [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030]
 
-// Trie for fast prefix search
-class TrieNode {
-  constructor() { this.children = {}; this.words = [] }
-}
-class Trie {
-  constructor() { this.root = new TrieNode() }
-  insert(word) {
-    const key = word.toLowerCase()
-    for (let i = 0; i < key.length; i++) {
-      let node = this.root
-      for (const ch of key.slice(i)) {
-        if (!node.children[ch]) node.children[ch] = new TrieNode()
-        node = node.children[ch]
-        if (!node.words.includes(word)) node.words.push(word)
-      }
-    }
-  }
-  search(query) {
-    if (!query) return []
-    let node = this.root
-    for (const ch of query.toLowerCase()) {
-      if (!node.children[ch]) return []
-      node = node.children[ch]
-    }
-    return node.words.slice(0, 8)
-  }
-}
 const universityTrie = new Trie()
 UNIVERSITIES.forEach(u => universityTrie.insert(u))
 
