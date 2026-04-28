@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Search, FileText, User, LogOut, Zap, BookOpen } from 'lucide-react'
+import { Search, FileText, User, LogOut, Zap, BookOpen, Briefcase } from 'lucide-react'
 import { useState } from 'react'
 
 export default function Navbar() {
@@ -35,6 +35,9 @@ export default function Navbar() {
             </NavLink>
             <NavLink to="/resume-fit" active={isActive('/resume-fit')}>
               <Zap size={14} className="inline mr-1" />Resume Fit
+            </NavLink>
+            <NavLink to="/opportunities" active={isActive('/opportunities')}>
+              <Briefcase size={14} className="inline mr-1" />Opportunities
             </NavLink>
           </div>
 
