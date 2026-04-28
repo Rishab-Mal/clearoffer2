@@ -32,7 +32,7 @@ export default function Search() {
 
   const fetchCompanies = useCallback(async () => {
     setLoading(true)
-    let q = supabase.from('companies').select('*').order(sort, { ascending: false })
+    let q = supabase.from('companies').select('*').gt('review_count', 0).order(sort, { ascending: false })
     if (query) q = q.ilike('name', `%${query}%`)
     const { data } = await q.limit(60)
     setCompanies(data || [])

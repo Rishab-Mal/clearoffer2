@@ -26,7 +26,7 @@ export default function Dashboard() {
     if (!user) return
 
     Promise.all([
-      supabase.from('companies').select('*').order('review_count', { ascending: false }).limit(6)
+      supabase.from('companies').select('*').gt('review_count', 0).order('review_count', { ascending: false }).limit(6)
         .then(({ data }) => setTrending(data || [])),
 
       supabase.from('reviews')
@@ -43,7 +43,7 @@ export default function Dashboard() {
           }))
         )),
 
-      supabase.from('companies').select('*').order('avg_rating', { ascending: false }).limit(3)
+      supabase.from('companies').select('*').gt('review_count', 0).order('avg_rating', { ascending: false }).limit(3)
         .then(({ data }) => setRecommended(data || [])),
 
       supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('user_id', user.id)
