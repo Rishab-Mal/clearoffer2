@@ -26,21 +26,23 @@ function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-      <Route path="/company/:id" element={<ProtectedRoute><Company /></ProtectedRoute>} />
-      <Route path="/submit-review" element={<ProtectedRoute><SubmitReview /></ProtectedRoute>} />
-      <Route path="/resume-fit" element={<ProtectedRoute><ResumeFit /></ProtectedRoute>} />
-      <Route path="/interview-prep/:id" element={<ProtectedRoute><InterviewPrep /></ProtectedRoute>} />
-      <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-    <Analytics />
+    <>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+        <Route path="/company/:id" element={<ProtectedRoute><Company /></ProtectedRoute>} />
+        <Route path="/submit-review" element={<ProtectedRoute><SubmitReview /></ProtectedRoute>} />
+        <Route path="/resume-fit" element={<ProtectedRoute><ResumeFit /></ProtectedRoute>} />
+        <Route path="/interview-prep/:id" element={<ProtectedRoute><InterviewPrep /></ProtectedRoute>} />
+        <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <Analytics />
+    </>
   )
 }
 
