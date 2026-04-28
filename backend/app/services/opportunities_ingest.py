@@ -8,7 +8,7 @@ from ..database import SessionLocal
 from ..models import Opportunity
 
 LISTINGS_URL = "https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/.github/scripts/listings.json"
-MAX_ROWS_PER_BUCKET = 20
+MAX_ROWS_PER_BUCKET = 21
 BUCKET_MAP: dict[str, str] = {
     "Software": "software",
     "Software Engineering": "software",

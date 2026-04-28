@@ -14,7 +14,7 @@ const SECTIONS = [
 export default function Opportunities() {
   const [roles, setRoles] = useState([])
   const [buckets, setBuckets] = useState({})
-  const [cap, setCap] = useState(20)
+  const [cap, setCap] = useState(21)
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState(SECTIONS[0].id)
 
@@ -32,11 +32,11 @@ export default function Opportunities() {
         })
         setRoles(data?.items || [])
         setBuckets(data?.buckets || {})
-        setCap(data?.cap || 20)
+        setCap(data?.cap || 21)
       } catch {
         setRoles([])
         setBuckets({})
-        setCap(20)
+        setCap(21)
       } finally {
         setLoading(false)
       }
@@ -64,7 +64,6 @@ export default function Opportunities() {
         <div className="flex flex-wrap gap-2 mb-8 border-b border-slate-200 pb-4">
           {SECTIONS.map(s => {
             const Icon = s.icon
-            const count = buckets[s.id] || 0
             const active = activeSection === s.id
             return (
               <button
@@ -78,9 +77,6 @@ export default function Opportunities() {
               >
                 <Icon size={14} />
                 {s.label}
-                <span className={`ml-1 px-1.5 py-0.5 rounded-md text-xs font-semibold ${active ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                  {count}
-                </span>
               </button>
             )
           })}
@@ -104,6 +100,10 @@ export default function Opportunities() {
 
 function SectionBlock({ section, roles, cap, loading }) {
   const Icon = section.icon
+  const paddedRoles = roles.length < cap
+    ? [...roles, ...Array.from({ length: cap - roles.length }, () => null)]
+    : roles
+
   return (
     <section id={section.id}>
       <div className="flex items-center gap-3 mb-5">
@@ -128,7 +128,7 @@ function SectionBlock({ section, roles, cap, loading }) {
         <EmptyState label={section.label} />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {roles.map((role, i) => <RoleCard key={role.id || i} role={role} />)}
+          {paddedRoles.map((role, i) => <RoleCard key={role?.id || `placeholder-${section.id}-${i}`} role={role} />)}
         </div>
       )}
     </section>
@@ -136,6 +136,23 @@ function SectionBlock({ section, roles, cap, loading }) {
 }
 
 function RoleCard({ role }) {
+  if (!role) {
+    return (
+      <div className="bg-white border border-dashed border-slate-200 rounded-2xl p-5 shadow-sm">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
+            <Building2 size={14} className="text-slate-300" />
+            Next role syncing
+          </div>
+        </div>
+        <h3 className="text-base font-semibold text-slate-700 mb-2 line-clamp-2">Another internship card will appear here after the next refresh.</h3>
+        <div className="flex items-center gap-3 text-xs text-slate-400">
+          <span>Placeholder slot</span>
+        </div>
+      </div>
+    )
+  }
+
   const primaryLocation = role.locations?.[0]
   const primaryTerm = role.terms?.[0]
 
