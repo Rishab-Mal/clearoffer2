@@ -128,3 +128,20 @@ class ResumeFitResult(BaseModel):
     strengths: List[str]
     gaps: List[str]
     suggestions: List[str]
+
+
+class OpportunityOut(BaseModel):
+    id: str
+    company_name: str
+    title: str
+    bucket: str
+    locations: List[str]
+    terms: List[str]
+    degrees: List[str]
+    sponsorship: Optional[str] = None
+    url: Optional[str] = None
+    company_url: Optional[str] = None
+    date_posted: Optional[int] = None
+
+    class Config:
+        from_attributes = True
