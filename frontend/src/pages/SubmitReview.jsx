@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -91,46 +91,34 @@ function RatingSlider({ label, name, value, onChange }) {
 }
 
 function CompanySearch({ value, onChange, hasError }) {
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(value || '')
   const [suggestions, setSuggestions] = useState([])
   const [open, setOpen] = useState(false)
   const [allCompanies, setAllCompanies] = useState(COMPANIES)
 
-  // Load live company list from Supabase on mount
-  useState(() => {
+  useEffect(() => {
     supabase.from('companies').select('name').order('name').then(({ data }) => {
       if (data?.length) {
-        const dbNames = data.map(c => c.name)
-        const merged = [...new Set([...dbNames, ...COMPANIES])].sort((a, b) =>
-          a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b)
-        )
+        const merged = [...new Set([...data.map(c => c.name), ...COMPANIES])]
+          .sort((a, b) => a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b))
         setAllCompanies(merged)
       }
     })
   }, [])
 
-  const handleInput = (e) => {
+  const handleChange = (e) => {
     const q = e.target.value
     setQuery(q)
-    setSelected('')
-    onChange(q.trim())  // accept typed value immediately
-    const matches = q.length >= 1
-      ? allCompanies.filter(c => c !== 'Other' && c.toLowerCase().includes(q.toLowerCase())).slice(0, 8)
-      : []
-    setSuggestions(matches)
+    onChange(q.trim())
+    setSuggestions(
+      q.length >= 1
+        ? allCompanies.filter(c => c !== 'Other' && c.toLowerCase().includes(q.toLowerCase())).slice(0, 8)
+        : []
+    )
     setOpen(true)
   }
 
-  const handleBlur = () => {
-    setTimeout(() => {
-      setOpen(false)
-      // if user typed something without picking from dropdown, keep it
-      if (query.trim() && !selected) onChange(query.trim())
-    }, 150)
-  }
-
   const select = (company) => {
-    setSelected(company)
     setQuery(company)
     setSuggestions([])
     setOpen(false)
@@ -138,34 +126,32 @@ function CompanySearch({ value, onChange, hasError }) {
   }
 
   return (
-    <div className="space-y-2">
-      <div className="relative">
-        <input
-          type="text"
-          value={query}
-          onChange={handleInput}
-          onFocus={() => { if (suggestions.length) setOpen(true) }}
-          onBlur={handleBlur}
-          placeholder="Search or type company name..."
-          autoComplete="off"
-          className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-colors ${
-            hasError ? 'border-red-400' : query.trim() ? 'border-amber-400' : 'border-slate-200 focus:border-amber-400'
-          }`}
-        />
-        {open && suggestions.length > 0 && (
-          <ul className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xl">
-            {suggestions.map(c => (
-              <li
-                key={c}
-                onMouseDown={() => select(c)}
-                className="px-4 py-2.5 text-sm cursor-pointer transition-colors text-slate-700 hover:bg-amber-500 hover:text-black"
-              >
-                {c}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+    <div className="relative">
+      <input
+        type="text"
+        value={query}
+        onChange={handleChange}
+        onFocus={() => { if (suggestions.length) setOpen(true) }}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Search or type company name..."
+        autoComplete="off"
+        className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-colors ${
+          hasError ? 'border-red-400' : query.trim() ? 'border-amber-400' : 'border-slate-200 focus:border-amber-400'
+        }`}
+      />
+      {open && suggestions.length > 0 && (
+        <ul className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xl">
+          {suggestions.map(c => (
+            <li
+              key={c}
+              onMouseDown={() => select(c)}
+              className="px-4 py-2.5 text-sm cursor-pointer transition-colors text-slate-700 hover:bg-amber-500 hover:text-black"
+            >
+              {c}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
