@@ -5,9 +5,48 @@ import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import { Check, ChevronLeft, ChevronRight, Star, ArrowLeft } from 'lucide-react'
 
-const COMPANIES = ['Stripe', 'Google', 'Meta', 'Amazon', 'Microsoft', 'Apple', 'Netflix', 'Airbnb',
-  'Uber', 'Lyft', 'Figma', 'Notion', 'Linear', 'Vercel', 'Snowflake', 'Databricks', 'Coinbase',
-  'OpenAI', 'Anthropic', 'Palantir', 'Roblox', 'Discord', 'Twitch', 'Spotify', 'Other']
+const COMPANIES = [
+  // Big Tech
+  'Amazon', 'Apple', 'Google', 'Meta', 'Microsoft', 'Netflix', 'Tesla',
+  // Top startups / scaleups
+  'Airbnb', 'Anthropic', 'Block', 'Brex', 'Canva', 'Chime', 'Coinbase',
+  'Databricks', 'Discord', 'DoorDash', 'Dropbox', 'Duolingo', 'Figma',
+  'GitHub', 'Instacart', 'Klarna', 'Linear', 'Lyft', 'Notion', 'Nuro',
+  'OpenAI', 'Palantir', 'Pinterest', 'Plaid', 'Reddit', 'Rivian',
+  'Robinhood', 'Roblox', 'Salesforce', 'Scale AI', 'Slack', 'Snap',
+  'Snowflake', 'SpaceX', 'Spotify', 'Stripe', 'Tiktok / ByteDance',
+  'Twitch', 'Twilio', 'Twitter / X', 'Uber', 'Vercel', 'Waymo',
+  'Workday', 'Zoom',
+  // Fortune 500 / enterprise
+  '3M', 'Abbott Laboratories', 'AbbVie', 'Accenture', 'Adobe',
+  'Aetna / CVS Health', 'Allstate', 'Alphabet', 'Altria', 'AMD',
+  'American Express', 'AT&T', 'Bank of America', 'Bechtel', 'Best Buy',
+  'Bloomberg', 'Boeing', 'Bristol-Myers Squibb', 'Capital One',
+  'Caterpillar', 'Chevron', 'Cigna', 'Cisco', 'Citigroup', 'Clorox',
+  'Coca-Cola', 'Comcast', 'ConocoPhillips', 'Costco', 'CVS Health',
+  'Deloitte', 'Dell Technologies', 'Disney', 'Dow', 'Eli Lilly',
+  'ExxonMobil', 'EY', 'FedEx', 'Ford', 'GE', 'General Dynamics',
+  'General Mills', 'General Motors', 'Goldman Sachs', 'Halliburton',
+  'HP', 'HPE', 'Honeywell', 'IBM', 'Intel', 'Intuit', 'J.P. Morgan',
+  'Johnson & Johnson', 'KPMG', 'Kraft Heinz', 'L3Harris', 'Lockheed Martin',
+  'Lowe\'s', 'Mastercard', 'McDonald\'s', 'McKinsey', 'Merck',
+  'Morgan Stanley', 'Nike', 'Northrop Grumman', 'Nvidia', 'Oracle',
+  'PayPal', 'Pfizer', 'PG&E', 'PwC', 'Procter & Gamble', 'Qualcomm',
+  'Raytheon Technologies', 'SAP', 'Siemens', 'Southwest Airlines',
+  'State Farm', 'T-Mobile', 'Target', 'Texas Instruments', 'UnitedHealth',
+  'UPS', 'US Bank', 'Verizon', 'Visa', 'Walmart', 'Walt Disney',
+  'Wells Fargo', 'Western Digital', 'WEX', 'Xerox',
+  // Finance / Consulting / PE
+  'Bain & Company', 'Barclays', 'BlackRock', 'Boston Consulting Group',
+  'Bridgewater', 'Citadel', 'Citadel Securities', 'Credit Suisse',
+  'D.E. Shaw', 'Deutsche Bank', 'Jane Street', 'Jump Trading',
+  'McKinsey & Company', 'Oliver Wyman', 'Point72', 'Renaissance Technologies',
+  'Two Sigma', 'UBS', 'Virtu Financial',
+  // Government / National Labs
+  'CIA', 'FBI', 'Google DeepMind', 'JPL / NASA', 'MITRE', 'NSA',
+  'Sandia National Laboratories',
+  'Other',
+].sort((a, b) => a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b))
 
 const TECH_OPTIONS = ['Python', 'JavaScript', 'TypeScript', 'React', 'Go', 'Java', 'C++', 'Rust',
   'SQL', 'PostgreSQL', 'MongoDB', 'Redis', 'Kubernetes', 'Docker', 'AWS', 'GCP', 'Figma', 'ML/PyTorch']
@@ -47,6 +86,88 @@ function RatingSlider({ label, name, value, onChange }) {
           ))}
         </div>
       </div>
+    </div>
+  )
+}
+
+function CompanySearch({ value, onChange, hasError }) {
+  const [query, setQuery] = useState('')
+  const [suggestions, setSuggestions] = useState([])
+  const [open, setOpen] = useState(false)
+  const [selected, setSelected] = useState(value || '')
+  const [customName, setCustomName] = useState('')
+
+  const handleInput = (e) => {
+    const q = e.target.value
+    setQuery(q)
+    setSelected('')
+    onChange('')
+    setSuggestions(
+      q.length >= 1
+        ? COMPANIES.filter(c => c.toLowerCase().includes(q.toLowerCase())).slice(0, 8)
+        : []
+    )
+    setOpen(true)
+  }
+
+  const select = (company) => {
+    setSelected(company)
+    setQuery(company)
+    setSuggestions([])
+    setOpen(false)
+    if (company === 'Other') {
+      onChange('')
+    } else {
+      onChange(company)
+    }
+  }
+
+  const handleCustom = (e) => {
+    setCustomName(e.target.value)
+    onChange(e.target.value)
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="relative">
+        <input
+          type="text"
+          value={query}
+          onChange={handleInput}
+          onFocus={() => { if (suggestions.length) setOpen(true) }}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          placeholder="Search company name..."
+          autoComplete="off"
+          className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-colors ${
+            hasError ? 'border-red-400' : selected && selected !== 'Other' ? 'border-amber-400' : 'border-slate-200 focus:border-amber-400'
+          }`}
+        />
+        {open && suggestions.length > 0 && (
+          <ul className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xl">
+            {suggestions.map(c => (
+              <li
+                key={c}
+                onMouseDown={() => select(c)}
+                className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${
+                  c === 'Other' ? 'text-slate-400 italic border-t border-slate-100 hover:bg-slate-50' : 'text-slate-700 hover:bg-amber-500 hover:text-black'
+                }`}
+              >
+                {c}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {selected === 'Other' && (
+        <input
+          type="text"
+          value={customName}
+          onChange={handleCustom}
+          placeholder="Type the company name"
+          autoFocus
+          className="w-full border border-amber-400 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500"
+        />
+      )}
     </div>
   )
 }
@@ -159,10 +280,11 @@ export default function SubmitReview() {
               <h2 className="text-lg font-bold text-slate-900">Step 1: The basics</h2>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Company *</label>
-                <select value={form.company} onChange={setE('company')} className={`w-full border rounded-xl px-4 py-3 text-sm outline-none ${errors.company ? 'border-red-400' : 'border-slate-200 focus:border-amber-400'}`}>
-                  <option value="">Select company</option>
-                  {COMPANIES.map(c => <option key={c}>{c}</option>)}
-                </select>
+                <CompanySearch
+                  value={form.company}
+                  onChange={v => { set('company', v); setErrors(e => ({ ...e, company: undefined })) }}
+                  hasError={!!errors.company}
+                />
                 {errors.company && <p className="text-xs text-red-500 mt-1">{errors.company}</p>}
               </div>
               <div>
