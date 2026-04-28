@@ -4,15 +4,17 @@ import api from '../lib/api'
 import { Briefcase, Code2, LineChart, Database, DollarSign, Cpu, ExternalLink, MapPin, Building2 } from 'lucide-react'
 
 const SECTIONS = [
-  { id: 'software-engineering', label: 'Software Engineering', icon: Code2, accent: 'text-sky-600', bg: 'bg-sky-50', ring: 'ring-sky-100' },
-  { id: 'product-management', label: 'Product Management', icon: LineChart, accent: 'text-violet-600', bg: 'bg-violet-50', ring: 'ring-violet-100' },
-  { id: 'data-science-ml', label: 'Data Science & Machine Learning', icon: Database, accent: 'text-emerald-600', bg: 'bg-emerald-50', ring: 'ring-emerald-100' },
-  { id: 'quantitative-finance', label: 'Quantitative Finance', icon: DollarSign, accent: 'text-amber-600', bg: 'bg-amber-50', ring: 'ring-amber-100' },
-  { id: 'hardware-engineering', label: 'Hardware Engineering', icon: Cpu, accent: 'text-rose-600', bg: 'bg-rose-50', ring: 'ring-rose-100' },
+  { id: 'software', label: 'Software Engineering', icon: Code2, accent: 'text-sky-600', bg: 'bg-sky-50', ring: 'ring-sky-100' },
+  { id: 'product', label: 'Product Management', icon: LineChart, accent: 'text-violet-600', bg: 'bg-violet-50', ring: 'ring-violet-100' },
+  { id: 'ai_ml_data', label: 'Data Science & Machine Learning', icon: Database, accent: 'text-emerald-600', bg: 'bg-emerald-50', ring: 'ring-emerald-100' },
+  { id: 'quant', label: 'Quantitative Finance', icon: DollarSign, accent: 'text-amber-600', bg: 'bg-amber-50', ring: 'ring-amber-100' },
+  { id: 'hardware', label: 'Hardware Engineering', icon: Cpu, accent: 'text-rose-600', bg: 'bg-rose-50', ring: 'ring-rose-100' },
 ]
 
 export default function Opportunities() {
-  const [opportunities, setOpportunities] = useState({})
+  const [roles, setRoles] = useState([])
+  const [buckets, setBuckets] = useState({})
+  const [cap, setCap] = useState(20)
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState(SECTIONS[0].id)
 
@@ -20,18 +22,29 @@ export default function Opportunities() {
     const fetchOpportunities = async () => {
       setLoading(true)
       try {
-        const { data } = await api.get('/api/opportunities')
-        setOpportunities(data || {})
+        const { data } = await api.get('/api/opportunities', {
+          params: {
+            bucket: activeSection,
+            limit: 100,
+            offset: 0,
+            sort: 'newest',
+          },
+        })
+        setRoles(data?.items || [])
+        setBuckets(data?.buckets || {})
+        setCap(data?.cap || 20)
       } catch {
-        setOpportunities({})
+        setRoles([])
+        setBuckets({})
+        setCap(20)
       } finally {
         setLoading(false)
       }
     }
     fetchOpportunities()
-  }, [])
+  }, [activeSection])
 
-  const totalCount = SECTIONS.reduce((sum, s) => sum + (opportunities[s.id]?.length || 0), 0)
+  const totalCount = Object.values(buckets).reduce((sum, count) => sum + count, 0)
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -44,14 +57,14 @@ export default function Opportunities() {
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-1">Internship openings</h1>
           <p className="text-slate-500">
-            {loading ? 'Loading roles...' : `${totalCount} live role${totalCount === 1 ? '' : 's'} across ${SECTIONS.length} disciplines.`}
+            {loading ? 'Loading roles...' : `${totalCount} live role${totalCount === 1 ? '' : 's'} across ${SECTIONS.length} disciplines. Up to ${cap} per tab.`}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-8 border-b border-slate-200 pb-4">
           {SECTIONS.map(s => {
             const Icon = s.icon
-            const count = opportunities[s.id]?.length || 0
+            const count = buckets[s.id] || 0
             const active = activeSection === s.id
             return (
               <button
@@ -78,7 +91,8 @@ export default function Opportunities() {
             <SectionBlock
               key={section.id}
               section={section}
-              roles={opportunities[section.id] || []}
+              roles={roles}
+              cap={cap}
               loading={loading}
             />
           ))}
@@ -88,7 +102,7 @@ export default function Opportunities() {
   )
 }
 
-function SectionBlock({ section, roles, loading }) {
+function SectionBlock({ section, roles, cap, loading }) {
   const Icon = section.icon
   return (
     <section id={section.id}>
@@ -99,7 +113,7 @@ function SectionBlock({ section, roles, loading }) {
         <div>
           <h2 className="text-lg font-semibold text-slate-900">{section.label}</h2>
           <p className="text-xs text-slate-500">
-            {loading ? 'Loading...' : `${roles.length} open role${roles.length === 1 ? '' : 's'}`}
+            {loading ? 'Loading...' : `${roles.length} / ${cap} open role${roles.length === 1 ? '' : 's'}`}
           </p>
         </div>
       </div>
@@ -122,6 +136,9 @@ function SectionBlock({ section, roles, loading }) {
 }
 
 function RoleCard({ role }) {
+  const primaryLocation = role.locations?.[0]
+  const primaryTerm = role.terms?.[0]
+
   return (
     <a
       href={role.url || '#'}
@@ -132,19 +149,19 @@ function RoleCard({ role }) {
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
           <Building2 size={14} className="text-slate-400" />
-          {role.company || 'Company'}
+          {role.company_name || 'Company'}
         </div>
         <ExternalLink size={14} className="text-slate-300 group-hover:text-amber-500 transition-colors" />
       </div>
       <h3 className="text-base font-semibold text-slate-900 mb-2 line-clamp-2">{role.title || 'Role title'}</h3>
       <div className="flex items-center gap-3 text-xs text-slate-500">
-        {role.location && (
+        {primaryLocation && (
           <span className="flex items-center gap-1">
             <MapPin size={12} />
-            {role.location}
+            {primaryLocation}
           </span>
         )}
-        {role.term && <span>{role.term}</span>}
+        {primaryTerm && <span>{primaryTerm}</span>}
       </div>
     </a>
   )
