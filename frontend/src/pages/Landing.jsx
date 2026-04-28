@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
-import { Cpu, BookOpen, BarChart3, Lock, Star, Github, ArrowRight } from 'lucide-react'
+import { Cpu, BookOpen, BarChart3, Lock, Star, ArrowRight } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 function useCountUp(target, duration = 2000) {
@@ -199,9 +199,6 @@ export default function Landing() {
         </div>
         <div className="flex items-center gap-6 text-sm text-slate-600">
           <a href="#" className="hover:text-slate-400 transition-colors">About</a>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-slate-400 transition-colors flex items-center gap-1">
-            <Github size={14} />GitHub
-          </a>
           <a href="mailto:hello@clearoffer.org" className="hover:text-slate-400 transition-colors">Contact</a>
         </div>
         <p className="text-slate-700 text-xs">© 2025 ClearOffer</p>
