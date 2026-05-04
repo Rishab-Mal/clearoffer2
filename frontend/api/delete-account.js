@@ -20,16 +20,18 @@ export default async function handler(req, res) {
   const uid = user.id
 
   try {
-    // Anonymize reviews so content stays but identity is removed
-    await supabaseAdmin.from('reviews')
-      .update({ anonymous: true, show_university: false })
-      .eq('user_id', uid)
-
-    // Delete user-specific data
+    // Delete everything that has a FK to auth.users first
     await supabaseAdmin.from('review_votes').delete().eq('user_id', uid)
     await supabaseAdmin.from('saved_companies').delete().eq('user_id', uid)
     await supabaseAdmin.from('job_alerts').delete().eq('user_id', uid)
     await supabaseAdmin.from('reports').delete().eq('reporter_id', uid)
+
+    // Anonymize reviews: null out user_id so FK is gone, keep content
+    await supabaseAdmin.from('reviews')
+      .update({ user_id: null, anonymous: true, show_university: false })
+      .eq('user_id', uid)
+
+    // Delete profile last (also FK to auth.users)
     await supabaseAdmin.from('profiles').delete().eq('id', uid)
 
     // Delete the auth user
