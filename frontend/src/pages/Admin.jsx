@@ -6,27 +6,15 @@ import Navbar from '../components/Navbar'
 import { Flag, Trash2, CheckCircle, AlertTriangle, Mail, Send, Users, User, ChevronDown } from 'lucide-react'
 
 const ADMIN_EMAILS = ['malhotra.r@ufl.edu']
-const RESEND_API_KEY = import.meta.env.VITE_RESEND_API_KEY
-
 async function sendEmail({ to, toName, subject, html }) {
-  const res = await fetch('https://api.resend.com/emails', {
+  const res = await fetch('/api/send-email', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: 'ClearOffer <noreply@clearoffer.org>',
-      to: toName ? `${toName} <${to}>` : to,
-      subject,
-      html,
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ to: toName ? `${toName} <${to}>` : to, subject, html }),
   })
-  if (!res.ok) {
-    const err = await res.json()
-    throw new Error(err.message || 'Send failed')
-  }
-  return res.json()
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || 'Send failed')
+  return data
 }
 
 function buildHtml(subject, body) {
@@ -107,7 +95,6 @@ export default function Admin() {
   const handleSend = async () => {
     if (!subject.trim() || !body.trim()) { setSendResult({ error: 'Subject and body are required.' }); return }
     if (recipients === 'single' && !singleEmail.trim()) { setSendResult({ error: 'Enter an email address.' }); return }
-    if (!RESEND_API_KEY) { setSendResult({ error: 'VITE_RESEND_API_KEY not set in environment.' }); return }
 
     setSending(true)
     setSendResult(null)
