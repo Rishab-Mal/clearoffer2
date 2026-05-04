@@ -11,8 +11,8 @@ const REPORT_REASONS = [
 ]
 
 export default function ReviewCard({ review }) {
-  const [helpful, setHelpful] = useState(review.helpful_count || 0)
-  const [dislikes, setDislikes] = useState(review.dislike_count || 0)
+  const [helpful, setHelpful] = useState(Math.max(0, review.helpful_count || 0))
+  const [dislikes, setDislikes] = useState(Math.max(0, review.dislike_count || 0))
   const [vote, setVote] = useState(null)
   const [showReport, setShowReport] = useState(false)
   const [reportReason, setReportReason] = useState('')
@@ -39,12 +39,14 @@ export default function ReviewCard({ review }) {
     }
   }
 
+  const dec = (setter) => setter(n => Math.max(0, n - 1))
+
   const handleLike = async () => {
     if (vote === 'like') {
-      setHelpful(h => h - 1); setVote(null); persistVote(null)
+      dec(setHelpful); setVote(null); persistVote(null)
       supabase.rpc('decrement_helpful', { review_id: review.id })
     } else {
-      if (vote === 'dislike') { setDislikes(d => d - 1); supabase.rpc('decrement_dislike', { review_id: review.id }) }
+      if (vote === 'dislike') { dec(setDislikes); supabase.rpc('decrement_dislike', { review_id: review.id }) }
       setHelpful(h => h + 1); setVote('like'); persistVote('like')
       supabase.rpc('increment_helpful', { review_id: review.id })
     }
@@ -52,10 +54,10 @@ export default function ReviewCard({ review }) {
 
   const handleDislike = async () => {
     if (vote === 'dislike') {
-      setDislikes(d => d - 1); setVote(null); persistVote(null)
+      dec(setDislikes); setVote(null); persistVote(null)
       supabase.rpc('decrement_dislike', { review_id: review.id })
     } else {
-      if (vote === 'like') { setHelpful(h => h - 1); supabase.rpc('decrement_helpful', { review_id: review.id }) }
+      if (vote === 'like') { dec(setHelpful); supabase.rpc('decrement_helpful', { review_id: review.id }) }
       setDislikes(d => d + 1); setVote('dislike'); persistVote('dislike')
       supabase.rpc('increment_dislike', { review_id: review.id })
     }
