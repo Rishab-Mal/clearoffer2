@@ -39,29 +39,25 @@ export default function ReviewCard({ review }) {
     }
   }
 
-  const dec = (setter) => setter(n => Math.max(0, n - 1))
-
-  const handleLike = async () => {
-    if (vote === 'like') {
-      dec(setHelpful); setVote(null); persistVote(null)
-      supabase.rpc('decrement_helpful', { review_id: review.id })
-    } else {
-      if (vote === 'dislike') { dec(setDislikes); supabase.rpc('decrement_dislike', { review_id: review.id }) }
-      setHelpful(h => h + 1); setVote('like'); persistVote('like')
-      supabase.rpc('increment_helpful', { review_id: review.id })
-    }
+  const applyVote = (newVote) => {
+    const oldVote = vote
+    // Update local state
+    if (oldVote === 'like') setHelpful(h => Math.max(0, h - 1))
+    if (oldVote === 'dislike') setDislikes(d => Math.max(0, d - 1))
+    if (newVote === 'like') setHelpful(h => h + 1)
+    if (newVote === 'dislike') setDislikes(d => d + 1)
+    setVote(newVote)
+    persistVote(newVote)
+    // Single RPC handles all count updates atomically
+    supabase.rpc('update_vote', {
+      p_review_id: review.id,
+      p_old_vote: oldVote,
+      p_new_vote: newVote,
+    })
   }
 
-  const handleDislike = async () => {
-    if (vote === 'dislike') {
-      dec(setDislikes); setVote(null); persistVote(null)
-      supabase.rpc('decrement_dislike', { review_id: review.id })
-    } else {
-      if (vote === 'like') { dec(setHelpful); supabase.rpc('decrement_helpful', { review_id: review.id }) }
-      setDislikes(d => d + 1); setVote('dislike'); persistVote('dislike')
-      supabase.rpc('increment_dislike', { review_id: review.id })
-    }
-  }
+  const handleLike = () => applyVote(vote === 'like' ? null : 'like')
+  const handleDislike = () => applyVote(vote === 'dislike' ? null : 'dislike')
 
   const handleReport = async () => {
     if (!reportReason) return
