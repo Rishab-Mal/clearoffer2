@@ -102,8 +102,8 @@ export default function Admin() {
 
     try {
       if (recipients === 'single') {
-        await sendEmail({ to: singleEmail.trim(), subject, html })
-        setSendResult({ success: `Sent to ${singleEmail}` })
+        const result = await sendEmail({ to: singleEmail.trim(), subject, html })
+        setSendResult({ success: `Sent to ${singleEmail} · ID: ${result.id || 'ok'}` })
       } else {
         await loadUsers()
         const list = userList.length > 0 ? userList : (await supabase.rpc('get_user_emails').then(r => r.data || []))

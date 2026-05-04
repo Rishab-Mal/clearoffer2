@@ -23,8 +23,8 @@ export default async function handler(req, res) {
     })
 
     const data = await response.json()
-    if (!response.ok) return res.status(response.status).json({ error: data.message || 'Send failed' })
-    res.status(200).json({ success: true })
+    if (!response.ok) return res.status(response.status).json({ error: data.message || data.name || 'Send failed', detail: data })
+    res.status(200).json({ success: true, id: data.id })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
