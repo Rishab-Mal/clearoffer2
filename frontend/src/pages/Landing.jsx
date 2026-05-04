@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
-import { Cpu, BookOpen, BarChart3, Lock, Star, ArrowRight } from 'lucide-react'
+import { Cpu, BookOpen, BarChart3, ArrowRight } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 function useCountUp(target, duration = 2000) {
@@ -116,64 +116,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Sample Locked Card */}
-      <section className="py-24 px-6">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-white mb-3">This is what you get access to</h2>
-          <p className="text-slate-400 mb-10">Sign up with your .edu email to unlock full company profiles.</p>
-
-          <div className="bg-lantern-card border border-lantern-border rounded-2xl p-6 text-left relative overflow-hidden">
-            {/* Company header */}
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-lg">M</div>
-                <div>
-                  <h3 className="text-white font-bold text-lg">Meta</h3>
-                  <p className="text-slate-500 text-sm">Software Engineer Intern</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-1 justify-end mb-1">
-                  {[1,2,3,4,5].map(i => (
-                    <Star key={i} size={13} className={i <= 4 ? 'fill-amber-400 text-amber-400' : 'fill-slate-700 text-slate-700'} />
-                  ))}
-                </div>
-                <p className="text-slate-500 text-xs">847 reviews</p>
-              </div>
-            </div>
-
-            <div className="space-y-3 relative">
-              {/* Blurred AI overview */}
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">AI Overview</p>
-                <div className="blur-content space-y-2 select-none">
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Meta internships are highly structured with strong mentorship and clear project ownership from day one. Interns are embedded in real product teams and shipped code goes to production.
-                  </p>
-                  <p className="text-slate-400 text-sm">
-                    Compensation is top-of-market. Culture is fast and performance-driven — those who thrive here prefer autonomy and move fast.
-                  </p>
-                </div>
-              </div>
-
-              {/* Lock overlay */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-lantern-card via-lantern-card/80 to-transparent rounded-xl">
-                <div className="bg-lantern-card border border-lantern-border rounded-2xl px-6 py-4 text-center shadow-xl">
-                  <Lock size={20} className="text-amber-500 mx-auto mb-2" />
-                  <p className="text-white font-semibold text-sm mb-1">Unlock full access</p>
-                  <p className="text-slate-500 text-xs mb-3">Sign up with your .edu email</p>
-                  <Link
-                    to="/auth"
-                    className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm px-4 py-2 rounded-xl transition-colors"
-                  >
-                    Get access <ArrowRight size={14} />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Review Counter */}
       <section ref={counterRef} className="bg-lantern-card border-y border-lantern-border py-20 px-6 text-center">
