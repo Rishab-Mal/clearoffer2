@@ -53,7 +53,7 @@ export default function ReviewCard({ review }) {
       p_review_id: review.id,
       p_old_vote: oldVote,
       p_new_vote: newVote,
-    })
+    }).then(({ error }) => { if (error) console.error('update_vote failed:', error.message) })
   }
 
   const handleLike = () => applyVote(vote === 'like' ? null : 'like')
