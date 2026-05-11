@@ -80,6 +80,9 @@ export default function ReviewCard({ review }) {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="font-semibold text-slate-900">{review.role_title}</span>
+            {review.company_name && (
+              <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{review.company_name}</span>
+            )}
             {review.internship_year && (
               <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{review.internship_year}</span>
             )}
