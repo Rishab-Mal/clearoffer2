@@ -305,6 +305,10 @@ export default function Auth() {
 
   const eduError = emailTouched && form.email && !validateEdu(form.email)
 
+  const handleResend = async () => {
+    await supabase.auth.resend({ type: 'signup', email: form.email })
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -318,8 +322,12 @@ export default function Auth() {
     setLoading(true)
     try {
       if (mode === 'login') {
-        await login(form.email, form.password)
-        navigate('/dashboard')
+        const data = await login(form.email, form.password)
+        if (!data?.user?.email_confirmed_at) {
+          setScreen('verify')
+        } else {
+          navigate('/dashboard')
+        }
       } else {
         await signup(form)
         setScreen('verify')
@@ -331,7 +339,7 @@ export default function Auth() {
     }
   }
 
-  if (screen === 'verify') return <VerifyScreen email={form.email} onResend={() => {}} />
+  if (screen === 'verify') return <VerifyScreen email={form.email} onResend={handleResend} />
   if (screen === 'forgot') return <ForgotScreen onBack={() => setScreen('form')} onSent={() => setScreen('forgot-sent')} />
   if (screen === 'forgot-sent') return <ForgotSentScreen onBack={() => setScreen('form')} />
 
