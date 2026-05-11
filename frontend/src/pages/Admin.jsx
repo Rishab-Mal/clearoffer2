@@ -32,7 +32,7 @@ function buildHtml(subject, body) {
     <div style="color:#475569;font-size:15px;line-height:1.6">${body.replace(/\n/g, '<br/>')}</div>
   </div>
   <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:16px 32px">
-    <p style="margin:0;color:#94a3b8;font-size:12px">© 2025 ClearOffer · <a href="https://clearoffer.org" style="color:#94a3b8">clearoffer.org</a></p>
+    <p style="margin:0;color:#94a3b8;font-size:12px">© 2026 ClearOffer · <a href="https://clearoffer.org" style="color:#94a3b8">clearoffer.org</a></p>
   </div>
 </div>
 </body>

@@ -143,7 +143,7 @@ export default function Landing() {
           <a href="#" className="hover:text-slate-400 transition-colors">About</a>
           <a href="mailto:hello@clearoffer.org" className="hover:text-slate-400 transition-colors">Contact</a>
         </div>
-        <p className="text-slate-700 text-xs">© 2025 ClearOffer</p>
+        <p className="text-slate-700 text-xs">© 2026 ClearOffer</p>
       </footer>
     </div>
   )
