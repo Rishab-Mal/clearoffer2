@@ -32,9 +32,6 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signup = async ({ email, password, name, university, grad_year, major }) => {
-    if (!email.toLowerCase().endsWith('.edu'))
-      throw new Error('ClearOffer is only available to students with .edu emails.')
-
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) throw error
 

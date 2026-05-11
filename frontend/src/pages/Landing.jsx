@@ -85,11 +85,11 @@ export default function Landing() {
           to="/auth"
           className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-black font-bold text-lg px-8 py-4 rounded-2xl transition-all shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 hover:-translate-y-0.5"
         >
-          Sign up with .edu
+          Sign up free
           <ArrowRight size={20} />
         </Link>
 
-        <p className="mt-4 text-slate-600 text-sm">Students only · Free forever · .edu required</p>
+        <p className="mt-4 text-slate-600 text-sm">Students only · Free forever</p>
       </section>
 
       {/* Feature Trio */}

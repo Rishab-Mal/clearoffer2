@@ -170,9 +170,6 @@ const YEARS = [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030]
 const universityTrie = new Trie()
 UNIVERSITIES.forEach(u => universityTrie.insert(u))
 
-function validateEdu(email) {
-  return email.trim().toLowerCase().endsWith('.edu')
-}
 
 function UniversitySearch({ value, onChange }) {
   const [query, setQuery] = useState(value || '')
@@ -285,7 +282,6 @@ export default function Auth() {
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [emailTouched, setEmailTouched] = useState(false)
   const [justVerified, setJustVerified] = useState(false)
   const [verifyData, setVerifyData] = useState({ email: '', userId: '', name: '' })
 
@@ -308,11 +304,8 @@ export default function Auth() {
 
   const set = (k) => (e) => {
     setForm(f => ({ ...f, [k]: e.target.value }))
-    if (k === 'email') setEmailTouched(false)
     setError('')
   }
-
-  const eduError = emailTouched && form.email && !validateEdu(form.email)
 
   const handleResend = async () => {
     await fetch('/api/send-verification', {
@@ -325,12 +318,6 @@ export default function Auth() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-
-    if (!validateEdu(form.email)) {
-      setError('Please use a .edu email address.')
-      setEmailTouched(true)
-      return
-    }
 
     setLoading(true)
     try {
@@ -412,27 +399,16 @@ export default function Auth() {
               {/* Email */}
               <div>
                 <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                  University email (.edu)
+                  Email
                 </label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={set('email')}
-                  onBlur={() => setEmailTouched(true)}
-                  placeholder="you@university.edu"
+                  placeholder="you@email.com"
                   required
-                  className={`w-full bg-lantern-bg border rounded-xl px-4 py-3 text-white placeholder-slate-600 text-sm outline-none transition-colors ${
-                    eduError
-                      ? 'border-red-500 focus:border-red-400'
-                      : 'border-lantern-border focus:border-amber-500'
-                  }`}
+                  className="w-full bg-lantern-bg border border-lantern-border focus:border-amber-500 rounded-xl px-4 py-3 text-white placeholder-slate-600 text-sm outline-none transition-colors"
                 />
-                {eduError && (
-                  <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1">
-                    <AlertCircle size={11} />
-                    ClearOffer is only available to students with .edu emails.
-                  </p>
-                )}
               </div>
 
               {/* Sign up fields */}
@@ -560,7 +536,7 @@ function ForgotScreen({ onBack, onSent }) {
           <span className="font-black text-white text-lg tracking-tight">CLEAROFFER</span>
         </div>
         <h2 className="text-2xl font-black text-white mb-1">Reset password</h2>
-        <p className="text-slate-500 text-sm mb-6">Enter your .edu email and we'll send a reset link.</p>
+        <p className="text-slate-500 text-sm mb-6">Enter your email and we'll send a reset link.</p>
         {error && (
           <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3 mb-4">
             <AlertCircle size={15} />{error}
@@ -571,7 +547,7 @@ function ForgotScreen({ onBack, onSent }) {
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="you@university.edu"
+            placeholder="you@email.com"
             required
             className="w-full bg-lantern-bg border border-lantern-border focus:border-amber-500 rounded-xl px-4 py-3 text-white placeholder-slate-600 text-sm outline-none transition-colors"
           />
