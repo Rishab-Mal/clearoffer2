@@ -42,7 +42,7 @@ export default function Company() {
       supabase.from('companies').select('*').eq('id', id).single()
         .then(({ data }) => setCompany(data)),
       supabase.from('reviews')
-        .select('*, profiles(university)')
+        .select('*')
         .eq('company_id', id)
         .eq('is_approved', true)
         .order('helpful_count', { ascending: false })
@@ -50,7 +50,6 @@ export default function Company() {
         .then(({ data }) => setReviews(
           (data || []).map(r => ({
             ...r,
-            university: r.show_university ? r.profiles?.university : null,
             rating: avg([r.rating_work, r.rating_mentorship, r.rating_compensation, r.rating_culture]),
           }))
         )),
