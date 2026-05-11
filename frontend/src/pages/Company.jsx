@@ -37,6 +37,7 @@ export default function Company() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!user) return
     Promise.all([
       supabase.from('companies').select('*').eq('id', id).single()
         .then(({ data }) => setCompany(data)),
@@ -54,7 +55,7 @@ export default function Company() {
           }))
         )),
     ]).finally(() => setLoading(false))
-  }, [id])
+  }, [id, user])
 
   if (loading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" /></div>
   if (!company) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><p className="text-slate-500">Company not found.</p></div>
