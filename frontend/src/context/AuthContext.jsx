@@ -35,11 +35,7 @@ export function AuthProvider({ children }) {
     if (!email.toLowerCase().endsWith('.edu'))
       throw new Error('ClearOffer is only available to students with .edu emails.')
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: window.location.origin },
-    })
+    const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) throw error
 
     if (data.user) {
@@ -49,8 +45,17 @@ export function AuthProvider({ children }) {
         university,
         grad_year: Number(grad_year),
         major,
+        email_verified: false,
       })
       if (profileError) console.error('Profile insert failed:', profileError.message)
+
+      await fetch('/api/send-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: data.user.id, email, name }),
+      })
+
+      await supabase.auth.signOut()
     }
     return data
   }
@@ -58,6 +63,21 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email_verified')
+      .eq('id', data.user.id)
+      .single()
+
+    if (!profile?.email_verified) {
+      await supabase.auth.signOut()
+      const err = new Error('Please verify your email before logging in.')
+      err.code = 'EMAIL_NOT_VERIFIED'
+      err.userId = data.user.id
+      throw err
+    }
+
     return data
   }
 

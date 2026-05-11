@@ -286,11 +286,20 @@ export default function Auth() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [emailTouched, setEmailTouched] = useState(false)
+  const [justVerified, setJustVerified] = useState(false)
+  const [verifyData, setVerifyData] = useState({ email: '', userId: '', name: '' })
 
   const { login, signup, user } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => { if (user) navigate('/dashboard') }, [user])
+
+  useEffect(() => {
+    if (searchParams.get('verified') === 'true') {
+      setJustVerified(true)
+      setMode('login')
+    }
+  }, [])
 
   const [form, setForm] = useState({
     email: '', password: '', name: '',
@@ -306,7 +315,11 @@ export default function Auth() {
   const eduError = emailTouched && form.email && !validateEdu(form.email)
 
   const handleResend = async () => {
-    await supabase.auth.resend({ type: 'signup', email: form.email })
+    await fetch('/api/send-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(verifyData),
+    })
   }
 
   const handleSubmit = async (e) => {
@@ -322,24 +335,26 @@ export default function Auth() {
     setLoading(true)
     try {
       if (mode === 'login') {
-        const data = await login(form.email, form.password)
-        if (!data?.user?.email_confirmed_at) {
-          setScreen('verify')
-        } else {
-          navigate('/dashboard')
-        }
+        await login(form.email, form.password)
+        navigate('/dashboard')
       } else {
-        await signup(form)
+        const result = await signup(form)
+        setVerifyData({ email: form.email, userId: result.user.id, name: form.name })
         setScreen('verify')
       }
     } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.')
+      if (err.code === 'EMAIL_NOT_VERIFIED') {
+        setVerifyData({ email: form.email, userId: err.userId, name: '' })
+        setScreen('verify')
+      } else {
+        setError(err.message || 'Something went wrong. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
   }
 
-  if (screen === 'verify') return <VerifyScreen email={form.email} onResend={handleResend} />
+  if (screen === 'verify') return <VerifyScreen email={verifyData.email} onResend={handleResend} />
   if (screen === 'forgot') return <ForgotScreen onBack={() => setScreen('form')} onSent={() => setScreen('forgot-sent')} />
   if (screen === 'forgot-sent') return <ForgotSentScreen onBack={() => setScreen('form')} />
 
@@ -378,6 +393,13 @@ export default function Auth() {
                 </button>
               ))}
             </div>
+
+            {justVerified && (
+              <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 text-sm rounded-xl px-4 py-3 mb-4">
+                <CheckCircle size={15} className="flex-shrink-0" />
+                Email verified! You can now log in.
+              </div>
+            )}
 
             {error && (
               <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3 mb-4">
