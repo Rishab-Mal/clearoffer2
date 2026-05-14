@@ -101,7 +101,7 @@ export const blogPosts = [
       ]},
       { type: 'h2', text: 'Team Variability: The Biggest Factor' },
       { type: 'p', text: 'More than almost any other big tech company, your Amazon internship experience is defined by your team placement. AWS teams (S3, EC2, Lambda, etc.) tend to be technically deep with excellent mentorship. Consumer teams can vary widely. Advertising and operations teams have a reputation for high intensity and sometimes less glamorous work.' },
-      { type: 'p', text', text: 'You cannot always control which team you land on. If given a choice during recruiting, ask about specific team projects and mentorship culture rather than just business unit.' },
+      { type: 'p', text: 'You cannot always control which team you land on. If given a choice during recruiting, ask about specific team projects and mentorship culture rather than just business unit.' },
       { type: 'h2', text: 'Compensation' },
       { type: 'p', text: 'Amazon SWE intern compensation is competitive but slightly below Google and Meta at the top end. Monthly stipends typically range from $7,500–$9,000. Housing assistance is provided for Seattle and other high-cost locations. Total 12-week compensation usually lands between $22,000–$28,000.' },
       { type: 'h2', text: 'Return Offer Rates' },
