@@ -47,6 +47,8 @@ export default function Admin() {
   // Reports state
   const [reports, setReports] = useState([])
   const [reportsLoading, setReportsLoading] = useState(true)
+  const [commentReports, setCommentReports] = useState([])
+  const [commentReportsLoading, setCommentReportsLoading] = useState(true)
 
   // Email state
   const [recipients, setRecipients] = useState('all') // 'all' | 'single'
@@ -62,6 +64,7 @@ export default function Admin() {
     if (!user) return
     if (!ADMIN_EMAILS.includes(user.email)) { navigate('/dashboard'); return }
     fetchReports()
+    fetchCommentReports()
   }, [user])
 
   const fetchReports = async () => {
@@ -72,6 +75,26 @@ export default function Admin() {
       .order('created_at', { ascending: false })
     setReports(data || [])
     setReportsLoading(false)
+  }
+
+  const fetchCommentReports = async () => {
+    setCommentReportsLoading(true)
+    const { data } = await supabase
+      .from('comment_reports')
+      .select(`id, created_at, comment_id, review_comments(id, content, is_question, review_id)`)
+      .order('created_at', { ascending: false })
+    setCommentReports(data || [])
+    setCommentReportsLoading(false)
+  }
+
+  const deleteComment = async (commentId) => {
+    await supabase.from('review_comments').delete().eq('id', commentId)
+    setCommentReports(r => r.filter(rep => rep.comment_id !== commentId))
+  }
+
+  const dismissCommentReport = async (reportId) => {
+    await supabase.from('comment_reports').delete().eq('id', reportId)
+    setCommentReports(r => r.filter(rep => rep.id !== reportId))
   }
 
   const loadUsers = async () => {
@@ -154,7 +177,7 @@ export default function Admin() {
           <button onClick={() => setTab('reports')}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-xl transition-colors ${tab === 'reports' ? 'bg-amber-500 text-black' : 'text-slate-500 hover:text-slate-700'}`}>
             <Flag size={14} />Moderation
-            {uniqueReviews.length > 0 && <span className={`text-xs px-1.5 rounded-full ${tab === 'reports' ? 'bg-black/10' : 'bg-red-100 text-red-600'}`}>{uniqueReviews.length}</span>}
+            {(uniqueReviews.length + commentReports.length) > 0 && <span className={`text-xs px-1.5 rounded-full ${tab === 'reports' ? 'bg-black/10' : 'bg-red-100 text-red-600'}`}>{uniqueReviews.length + commentReports.length}</span>}
           </button>
           <button onClick={() => { setTab('email'); loadUsers() }}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-xl transition-colors ${tab === 'email' ? 'bg-amber-500 text-black' : 'text-slate-500 hover:text-slate-700'}`}>
@@ -215,6 +238,47 @@ export default function Admin() {
               })}
             </div>
           )
+        )}
+
+        {/* ── COMMENT REPORTS ── */}
+        {tab === 'reports' && !commentReportsLoading && commentReports.length > 0 && (
+          <div className="mt-6 space-y-4">
+            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wide">Reported Comments</h2>
+            {Object.values(
+              commentReports.reduce((acc, rep) => {
+                const cid = rep.comment_id
+                if (!acc[cid]) acc[cid] = { ...rep, count: 0 }
+                acc[cid].count++
+                return acc
+              }, {})
+            ).map(rep => {
+              const comment = rep.review_comments
+              if (!comment) return null
+              return (
+                <div key={rep.comment_id} className="bg-white rounded-2xl border border-slate-200 p-6">
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div>
+                      <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-full mb-2">
+                        <AlertTriangle size={11} />{rep.count} report{rep.count !== 1 ? 's' : ''}
+                      </span>
+                      {comment.is_question && <span className="ml-2 text-xs bg-violet-50 text-violet-600 border border-violet-200 px-2 py-0.5 rounded-full">Question</span>}
+                      <p className="text-sm text-slate-700 mt-2">{comment.content}</p>
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button onClick={() => dismissCommentReport(rep.id)}
+                        className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-xl transition-colors">
+                        <CheckCircle size={13} />Dismiss
+                      </button>
+                      <button onClick={() => deleteComment(rep.comment_id)}
+                        className="flex items-center gap-1.5 text-xs font-medium text-white bg-red-500 hover:bg-red-600 px-3 py-2 rounded-xl transition-colors">
+                        <Trash2 size={13} />Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         )}
 
         {/* ── EMAIL TAB ── */}
