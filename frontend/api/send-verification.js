@@ -25,7 +25,7 @@ module.exports = async function handler(req, res) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'ClearOffer <noreply@clearoffer.org>',
+      from: 'ClearOffer <onboarding@resend.dev>',
       to: email,
       subject: 'Verify your ClearOffer account',
       html: buildHtml(name || 'there', verifyUrl),

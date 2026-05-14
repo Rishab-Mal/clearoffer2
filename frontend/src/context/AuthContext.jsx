@@ -52,11 +52,16 @@ export function AuthProvider({ children }) {
       })
       if (profileError) console.error('Profile insert failed:', profileError.message)
 
-      await fetch('/api/send-verification', {
+      const verifyRes = await fetch('/api/send-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: data.user.id, email, name }),
       })
+      if (!verifyRes.ok) {
+        const verifyErr = await verifyRes.json().catch(() => ({}))
+        console.error('Verification email failed:', verifyErr)
+        throw new Error(verifyErr.error || 'Failed to send verification email. Please try again.')
+      }
 
       await supabase.auth.signOut()
     }
