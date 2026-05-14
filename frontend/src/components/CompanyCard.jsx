@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Star, MessageSquare, Bookmark, BookmarkCheck } from 'lucide-react'
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
@@ -12,13 +12,14 @@ const COMPANY_COLORS = {
 
 export default function CompanyCard({ company, showSave = true }) {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [saved, setSaved] = useState(company.is_saved || false)
   const bgColor = COMPANY_COLORS[company.name] || 'bg-slate-600'
 
   const handleSave = async (e) => {
     e.preventDefault()
     e.stopPropagation()
-    if (!user) return
+    if (!user) { navigate('/auth'); return }
     if (saved) {
       await supabase.from('saved_companies')
         .delete()

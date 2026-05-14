@@ -89,13 +89,18 @@ create policy "profiles_read_own" on public.profiles for select to authenticated
 create policy "profiles_insert_own" on public.profiles for insert to authenticated with check (id = auth.uid());
 create policy "profiles_update_own" on public.profiles for update to authenticated using (id = auth.uid());
 
--- Companies (read-only for users, inserts via service role or RPC)
-create policy "companies_read" on public.companies for select to authenticated using (true);
+-- Companies (public read for SEO/AdSense; inserts via authenticated users or RPC)
+create policy "companies_read" on public.companies for select using (true);
 create policy "companies_insert" on public.companies for insert to authenticated with check (true);
 create policy "companies_update" on public.companies for update to authenticated using (true);
 
--- Reviews
-create policy "reviews_read" on public.reviews for select to authenticated using (is_approved = true);
+-- Reviews (public read of approved reviews for SEO/AdSense)
+create policy "reviews_read" on public.reviews for select using (is_approved = true);
+-- Run in Supabase SQL editor to apply to existing deployment:
+-- DROP POLICY IF EXISTS "companies_read" ON public.companies;
+-- CREATE POLICY "companies_read" ON public.companies FOR SELECT USING (true);
+-- DROP POLICY IF EXISTS "reviews_read" ON public.reviews;
+-- CREATE POLICY "reviews_read" ON public.reviews FOR SELECT USING (is_approved = true);
 create policy "reviews_insert" on public.reviews for insert to authenticated with check (user_id = auth.uid());
 create policy "reviews_update_own" on public.reviews for update to authenticated using (user_id = auth.uid());
 create policy "reviews_delete_own" on public.reviews for delete to authenticated using (user_id = auth.uid());

@@ -4,7 +4,8 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import ReviewCard from '../components/ReviewCard'
-import { Star, AlertTriangle, Clock, Layers, RotateCcw, Cpu, BookOpen, ArrowRight, FileText } from 'lucide-react'
+import AdUnit from '../components/AdUnit'
+import { Star, AlertTriangle, Clock, Layers, RotateCcw, Cpu, BookOpen, ArrowRight, FileText, LogIn } from 'lucide-react'
 
 function RatingBar({ label, value }) {
   return (
@@ -37,7 +38,6 @@ export default function Company() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user) return
     Promise.all([
       supabase.from('companies').select('*').eq('id', id).single()
         .then(({ data }) => setCompany(data)),
@@ -144,6 +144,20 @@ export default function Company() {
               </div>
               <div className="space-y-4">{reviews.slice(0, 2).map(r => <ReviewCard key={r.id} review={r} />)}</div>
             </div>
+
+            <AdUnit slot="3791428174" format="auto" />
+
+            {!user && (
+              <div className="bg-slate-900 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-4">
+                <div className="flex-1">
+                  <p className="font-bold text-white text-lg">See all {company.review_count} reviews + score your resume</p>
+                  <p className="text-slate-400 text-sm mt-1">Free account. Takes 30 seconds.</p>
+                </div>
+                <Link to="/auth" className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-bold px-6 py-3 rounded-xl transition-colors whitespace-nowrap flex-shrink-0">
+                  <LogIn size={15} />Sign up free
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -152,7 +166,22 @@ export default function Company() {
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-slate-900">{reviews.length} reviews</h2>
             </div>
-            {reviews.map(r => <ReviewCard key={r.id} review={r} />)}
+            {reviews.flatMap((r, i) => {
+              const els = [<ReviewCard key={r.id} review={r} />]
+              if ((i + 1) % 3 === 0) els.push(<AdUnit key={`ad-${i}`} slot="6452973851" format="auto" />)
+              return els
+            })}
+            {!user && reviews.length > 0 && (
+              <div className="bg-slate-900 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-4 mt-2">
+                <div className="flex-1">
+                  <p className="font-bold text-white">Want to write a review or score your resume?</p>
+                  <p className="text-slate-400 text-sm mt-1">Free account — takes 30 seconds.</p>
+                </div>
+                <Link to="/auth" className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-bold px-6 py-3 rounded-xl transition-colors whitespace-nowrap flex-shrink-0">
+                  <LogIn size={15} />Sign up free
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -180,6 +209,8 @@ export default function Company() {
                 <Cpu size={14} />Get my study plan <ArrowRight size={14} />
               </Link>
             </div>
+
+            <AdUnit slot="3791428174" format="auto" />
           </div>
         )}
       </div>

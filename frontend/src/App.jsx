@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { useAuth } from './context/AuthContext'
-import Landing from './pages/Landing'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import Search from './pages/Search'
@@ -28,18 +27,18 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<Navigate to="/search" replace />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/company/:id" element={<Company />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-        <Route path="/company/:id" element={<ProtectedRoute><Company /></ProtectedRoute>} />
         <Route path="/submit-review" element={<ProtectedRoute><SubmitReview /></ProtectedRoute>} />
         <Route path="/interview-prep/:id" element={<ProtectedRoute><InterviewPrep /></ProtectedRoute>} />
         <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/search" replace />} />
       </Routes>
       <Analytics />
     </>
