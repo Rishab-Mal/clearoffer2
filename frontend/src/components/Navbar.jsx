@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { Search, FileText, User, LogOut, Briefcase, Flag, LayoutDashboard, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 
-const ADMIN_EMAILS = ['malhotra.r@ufl.edu']
+const ADMIN_EMAILS = ['malhotra.r@ufl.edu', 'rishab.malhotra7580@gmail.com']
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },

@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import { Flag, Trash2, CheckCircle, AlertTriangle, Mail, Send, Users, User, ChevronDown } from 'lucide-react'
 
-const ADMIN_EMAILS = ['malhotra.r@ufl.edu']
+const ADMIN_EMAILS = ['malhotra.r@ufl.edu', 'rishab.malhotra7580@gmail.com']
 async function sendEmail({ to, toName, subject, html }) {
   const res = await fetch('/api/send-email', {
     method: 'POST',
