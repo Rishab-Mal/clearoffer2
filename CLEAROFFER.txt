@@ -1,0 +1,307 @@
+CLEAROFFER — FULL PRODUCT OVERVIEW
+====================================
+Last updated: May 2026
+
+
+WHAT IT IS
+----------
+ClearOffer is a student-focused internship intelligence platform. It aggregates
+real intern reviews, generates AI summaries, scores resumes against open roles,
+and helps students prep for interviews — all sourced from crowdsourced data
+written by past interns.
+
+Core pitch: "See inside before you sign."
+
+
+WHO IT'S FOR
+------------
+College students searching for, applying to, or deciding between internships.
+Anyone can create an account. No .edu restriction.
+
+
+TECH STACK
+----------
+Frontend:   React (Vite), Tailwind CSS, Lucide icons, Recharts
+Backend:    Supabase (Postgres + Auth + RLS + Edge Functions)
+AI:         OpenRouter API (Claude 3.5 Sonnet)
+Email:      Resend (noreply@clearoffer.org)
+Hosting:    Vercel (frontend + serverless API functions)
+Auth:       Supabase Auth + custom email verification via Resend
+
+
+DATABASE SCHEMA (Supabase)
+--------------------------
+
+profiles
+  - id (UUID, FK → auth.users)
+  - name, university, grad_year, major
+  - email_verified (boolean, default true for existing users)
+  - resume_text (stored resume for AI scoring)
+  - created_at
+
+companies
+  - id (UUID)
+  - name (unique), industry
+  - avg_rating, review_count
+  - rating_work, rating_mentorship, rating_compensation, rating_culture
+  - return_offer_rate (% of reviewers who would return)
+  - top_tags (text[], most common tech stack from reviews)
+  - ai_overview (AI-generated summary text)
+  - created_at
+  Seed: 30 companies (Stripe, Google, Meta, Amazon, Microsoft, Apple, etc.)
+  Auto-created when a user submits a review for an unlisted company.
+
+reviews
+  - id (UUID)
+  - user_id (FK → auth.users), company_id (FK → companies)
+  - role_title, team, internship_year, duration_months
+  - location_type (onsite/hybrid/remote), location
+  - rating, rating_work, rating_mentorship, rating_compensation, rating_culture
+  - work_description (min 100 chars), one_line_summary (max 120 chars)
+  - tech_used (text[])
+  - interview_rounds, interview_topics (text[]), interview_difficulty (1–5)
+  - days_to_offer, specific_questions
+  - would_return, would_recommend (booleans)
+  - anonymous (default true), show_university (default false)
+  - helpful_count, dislike_count
+  - is_approved (boolean, default true)
+  - created_at
+
+saved_companies
+  - user_id (FK), company_id (FK)
+  - unique(user_id, company_id)
+
+reports
+  - review_id (FK), reporter_id (FK)
+  - reason: Inappropriate language | Fake/misleading | Personal info | Spam | Other
+  - created_at
+
+review_votes
+  - user_id (FK), review_id (FK)
+  - vote: 'like' | 'dislike'
+  Atomic updates via Supabase RPC update_vote
+
+job_alerts
+  - user_id (FK), company_name (text)
+  Tracks which companies a user wants notifications for
+
+Database triggers:
+  - After any review insert/update/delete: recalculate_company_stats runs
+    automatically and updates companies.avg_rating, review_count, all
+    rating sub-scores, and return_offer_rate.
+
+
+ROW-LEVEL SECURITY
+------------------
+All tables have RLS enabled.
+
+profiles:     any authenticated user can read; can only insert/update own row
+companies:    any authenticated user can read/insert/update
+reviews:      any authenticated user can read approved reviews (is_approved=true);
+              can only insert/update/delete own reviews
+saved_companies: users can only read/insert/delete their own saved companies
+reports:      users can insert; admin reads via service role
+
+
+AUTHENTICATION FLOW
+-------------------
+1. User fills out signup form (email, password, name, university, grad year, major)
+2. Supabase creates auth user
+3. Profile row created with email_verified = false
+4. Verification email sent via Resend (noreply@clearoffer.org)
+   - HMAC-SHA256 signed token (24hr expiry) embedded in link
+   - Link hits Vercel function /api/verify-email
+   - Token validated; profiles.email_verified set to true via service role key
+   - User redirected to /auth?verified=true
+5. User logs in
+   - If email_verified is explicitly false → blocked, verify screen shown
+   - If email_verified is true (or column missing/null) → allowed through
+6. Profile loaded; user set in React context
+
+Password reset: Supabase sends reset email → /reset-password page
+
+
+PAGES
+-----
+
+/ (Landing)
+  Public. Hero with CTA, feature highlights, live review count.
+  Shows: AI summaries, interview intel, resume fit scoring pitch.
+
+/auth
+  Signup + login in one page (toggle).
+  Signup: email, password, name, university (Trie autocomplete), grad year,
+          major (Trie autocomplete)
+  Login: email, password. Forgot password link.
+  Post-signup: verify screen with resend option.
+  Post-verification: "Email verified! You can now log in." banner.
+
+/reset-password
+  Validates Supabase session from email link.
+  New password + confirm. Redirects to dashboard on success.
+
+/dashboard (protected)
+  Personalized greeting. Shows:
+  - Recommended companies (top-rated, filterable by user's major)
+  - Recent reviews feed (latest approved reviews across all companies)
+  - Quick actions: write review, score resume, search companies
+  - Banner nudge if user has written 0 reviews
+
+/search (protected)
+  Search companies by name. Filter by:
+  - Sort: most reviewed, highest rated, most recent
+  - Role type: SWE, PM, Data Science, ML/AI, Design, DevOps, Finance, Marketing
+  - Tech stack: Python, JS, TS, React, Go, Java, C++, Rust, SQL, K8s, AWS, ML
+  Save/unsave companies. Shows rating, review count, tech tags per company.
+
+/company/:id (protected)
+  Three tabs:
+  Overview:      AI-generated summary, tech stack tags, 2 sample reviews
+  Reviews:       All approved reviews sorted by helpful_count
+  Interview prep: avg rounds, difficulty, days to offer, common topics,
+                 link to AI study plan (/interview-prep/:id)
+  Company header: name, industry, star rating, return offer %, rating bars.
+  Sticky "Write a review" CTA.
+
+/submit-review (protected)
+  4-step form with progress bar:
+  Step 1 (Basics):    Company (autocomplete), role title, team, year, duration,
+                      location type, location
+  Step 2 (The work):  Star ratings for work/mentorship/compensation/culture,
+                      work description (100+ chars), tech stack selection
+  Step 3 (Interview): Rounds (1–6), days to offer, difficulty (1–5), topics
+                      (Arrays, Trees, DP, System Design, Behavioral, etc.),
+                      specific questions
+  Step 4 (Final):     Would return (yes/no), one-line summary, anonymous toggle,
+                      show university toggle
+  On submit: company created if not found, review inserted, stats trigger fires.
+
+/resume-fit (protected)
+  Upload PDF or .txt resume, or paste text (max 5000 chars).
+  Select target company + role type.
+  AI (Claude via OpenRouter) returns:
+    - Overall match score (0–100)
+    - Subscores: skills, experience level, project relevance
+    - Strengths, gaps, actionable suggestions, keywords to add
+  Color coding: green 75+, amber 50–74, red below 50.
+  Resume saved to profile for reuse across sessions.
+
+/opportunities (protected)
+  Internship job board. Data pulled live from GitHub SimplifyJobs JSON.
+  Categories: SWE, PM, Data/ML, Quant/Finance, Hardware/Systems
+  Filters: search, US-only toggle, visa sponsorship toggle
+  If resume on file: each job gets an AI match score; recommended jobs
+  (≥50% match) highlighted.
+  Per job: company, title, locations, posted date, visa badge, apply link.
+  Bell icon: subscribe to job alerts for a company.
+  "Tailor Resume" button: opens AI modal showing score, strengths, gaps,
+  suggestions, keywords for that specific job.
+
+/interview-prep/:id (protected)
+  AI-generated 4-week study plan for a specific company.
+  Based on: top 6 reported interview topics from that company's reviews.
+  Shows: topic frequency chart, difficulty distribution, avg days to offer,
+  4-week plan, 3–4 specific tips from past interns.
+  Generated via OpenRouter Claude.
+
+/profile (protected)
+  Three tabs:
+  My reviews: all reviews written by user; can delete (anonymizes, keeps review)
+  Saved:      all saved companies; view or unsave
+  Settings:   edit name; view email/university/major/grad year; delete account
+              (account anonymized, reviews kept with user_id nulled out)
+
+  Contribution tier system:
+    Lurker      0–9 points
+    Contributor 10–29 points
+    Insider     30–79 points
+    Legend      80+ points
+  10 points per review written.
+
+/admin (protected, admin-only)
+  Only accessible to malhotra.r@ufl.edu.
+  Two tabs:
+  Reports:  lists flagged reviews grouped by review, with report count.
+            Actions: dismiss report or delete review entirely.
+  Email:    compose and send email to all users or a specific email.
+            Sends via /api/send-email endpoint (Resend).
+
+
+VERCEL API FUNCTIONS (serverless)
+----------------------------------
+
+/api/send-verification  (POST)
+  Called on signup. Accepts { userId, email, name }.
+  Generates HMAC-SHA256 signed token (24hr expiry).
+  Sends verification email via Resend.
+  Env vars required: RESEND_API_KEY, VERIFICATION_SECRET, APP_URL
+
+/api/verify-email  (GET)
+  Called when user clicks link in email. Accepts ?token=...
+  Validates HMAC signature and token expiry.
+  PATCHes profiles.email_verified = true via Supabase REST API (service role).
+  Redirects to /auth?verified=true on success.
+  Env vars required: VERIFICATION_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+
+
+VERCEL ENVIRONMENT VARIABLES REQUIRED
+--------------------------------------
+RESEND_API_KEY             Resend API key
+VERIFICATION_SECRET        Random secret for HMAC token signing (32+ chars)
+SUPABASE_URL               https://ufdinzhnvkkmqyaxgwho.supabase.co
+SUPABASE_SERVICE_ROLE_KEY  Supabase service role key (bypasses RLS)
+APP_URL                    https://clearoffer.org
+VITE_SUPABASE_URL          Same URL (frontend access)
+VITE_SUPABASE_PUBLISHABLE_KEY  Supabase anon/publishable key
+VITE_OPENROUTER_API_KEY    OpenRouter API key
+VITE_OPENROUTER_MODEL      anthropic/claude-3.5-sonnet
+
+
+AI FEATURES
+-----------
+All AI via OpenRouter (Claude 3.5 Sonnet).
+
+1. Resume Fit Scorer (/resume-fit)
+   Input:  resume text + target company + role type
+   Output: JSON with overall_score, subscores, strengths[], gaps[],
+           suggestions[], keywords[]
+
+2. Job Tailor Modal (/opportunities)
+   Input:  resume text + job title + company + description keywords
+   Output: match score, strengths, improvements, keywords
+   Logic:  keyword overlap scoring (min 2 matches), capped at 98%
+
+3. Interview Prep Study Plan (/interview-prep/:id)
+   Input:  top 6 interview topics from that company's reviews
+   Output: 4-week study plan (by week) + 3–4 intern tips
+
+4. Company AI Overview (stored in companies.ai_overview)
+   Pre-generated; shown on Company overview tab and used as context
+   in resume fit scoring.
+
+
+KEY BUSINESS LOGIC
+------------------
+- Companies are auto-created if a user submits a review for one not in the DB.
+  Lookup is case-insensitive (ilike). Name must be unique.
+- All company stats (avg rating, review count, rating breakdowns,
+  return offer rate) are recalculated automatically after every
+  review insert/update/delete via a Postgres trigger.
+- Reviews are approved by default (is_approved = true). No manual
+  moderation queue — admins can retroactively delete flagged reviews.
+- Users can vote helpful/not helpful on reviews. Vote state is tracked
+  per user; toggling removes the vote. Uses atomic RPC to prevent races.
+- Review authors can delete their own reviews, which anonymizes the
+  user_id but keeps the review content.
+- Deleting an account nulls out user_id on all reviews (reviews kept
+  anonymously), removes the profile, and deletes the auth user.
+
+
+DESIGN NOTES
+------------
+- Dark theme: bg #08080E ("lantern-bg"), card bg #0F0F1A ("lantern-card")
+- Accent: amber (#F59E0B)
+- Mobile-first with bottom navigation bar on small screens
+- Tailwind utility classes throughout; no component library
+- Star ratings displayed with Lucide Star icons
+- Charts via Recharts (bar charts for interview topics / difficulty)
