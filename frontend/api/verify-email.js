@@ -1,6 +1,6 @@
-const crypto = require('crypto')
+import crypto from 'crypto'
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   const token = req.query.token
   const appUrl = process.env.APP_URL || `https://${req.headers.host}`
 

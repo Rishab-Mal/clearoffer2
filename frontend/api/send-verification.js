@@ -1,6 +1,6 @@
-const crypto = require('crypto')
+import crypto from 'crypto'
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
   const { userId, email, name } = req.body || {}
