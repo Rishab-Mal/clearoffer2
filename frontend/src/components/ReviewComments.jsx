@@ -55,7 +55,7 @@ export default function ReviewComments({ reviewId }) {
       .insert({
         review_id: reviewId,
         user_id: user.id,
-        author_name: user.name || 'Anonymous',
+        author_name: 'Anonymous',
         content: content.trim(),
         is_question: isQuestion,
       })
@@ -117,8 +117,8 @@ export default function ReviewComments({ reviewId }) {
             </p>
           ) : (
             <div className="flex gap-2.5 items-start">
-              <div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center text-xs font-bold text-black flex-shrink-0">
-                {user.name?.[0]?.toUpperCase() || '?'}
+              <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 flex-shrink-0">
+                A
               </div>
               <div className="flex-1 space-y-2">
                 <textarea
