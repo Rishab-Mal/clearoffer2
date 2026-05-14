@@ -91,6 +91,22 @@ create table if not exists public.review_comments (
 -- create policy "comments_insert" on public.review_comments for insert to authenticated with check (user_id = auth.uid());
 -- create policy "comments_delete_own" on public.review_comments for delete to authenticated using (user_id = auth.uid());
 
+-- Admin RPCs for comment moderation (run in Supabase SQL editor):
+-- create or replace function public.admin_delete_comment(target_comment_id uuid)
+-- returns void language plpgsql security definer as $$
+-- begin
+--   delete from public.comment_reports where comment_id = target_comment_id;
+--   delete from public.review_comments where id = target_comment_id;
+-- end;
+-- $$;
+--
+-- create or replace function public.admin_dismiss_comment_report(target_report_id uuid)
+-- returns void language plpgsql security definer as $$
+-- begin
+--   delete from public.comment_reports where id = target_report_id;
+-- end;
+-- $$;
+
 -- Comment reports
 -- create table if not exists public.comment_reports (
 --   id          uuid default gen_random_uuid() primary key,

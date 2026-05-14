@@ -88,12 +88,14 @@ export default function Admin() {
   }
 
   const deleteComment = async (commentId) => {
-    await supabase.from('review_comments').delete().eq('id', commentId)
+    const { error } = await supabase.rpc('admin_delete_comment', { target_comment_id: commentId })
+    if (error) { alert('Delete failed: ' + error.message); return }
     setCommentReports(r => r.filter(rep => rep.comment_id !== commentId))
   }
 
   const dismissCommentReport = async (reportId) => {
-    await supabase.from('comment_reports').delete().eq('id', reportId)
+    const { error } = await supabase.rpc('admin_dismiss_comment_report', { target_report_id: reportId })
+    if (error) { alert('Dismiss failed: ' + error.message); return }
     setCommentReports(r => r.filter(rep => rep.id !== reportId))
   }
 
