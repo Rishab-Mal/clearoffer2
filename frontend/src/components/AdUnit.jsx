@@ -4,6 +4,8 @@ export default function AdUnit({ slot, format = 'auto', className = '' }) {
   const ref = useRef(null)
 
   useEffect(() => {
+    const consent = localStorage.getItem('cookie_consent')
+    if (consent === 'declined') return
     try {
       if (ref.current && ref.current.dataset.adStatus) return
       ;(window.adsbygoogle = window.adsbygoogle || []).push({})

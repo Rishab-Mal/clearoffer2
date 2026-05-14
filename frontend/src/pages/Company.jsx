@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import ReviewCard from '../components/ReviewCard'
 import AdUnit from '../components/AdUnit'
+import Footer from '../components/Footer'
 import { Star, AlertTriangle, Clock, Layers, RotateCcw, Cpu, BookOpen, ArrowRight, FileText, LogIn } from 'lucide-react'
 
 function RatingBar({ label, value }) {
@@ -214,6 +215,8 @@ export default function Company() {
           </div>
         )}
       </div>
+
+      <Footer />
 
       <div className="fixed bottom-6 right-6">
         <Link to="/submit-review" className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-bold px-5 py-3 rounded-2xl shadow-xl shadow-amber-500/20 transition-all hover:-translate-y-0.5">

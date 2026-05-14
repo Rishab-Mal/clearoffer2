@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import CompanyCard from '../components/CompanyCard'
 import AdUnit from '../components/AdUnit'
+import Footer from '../components/Footer'
 import { Search as SearchIcon, SlidersHorizontal, X } from 'lucide-react'
 
 const ROLES = ['SWE', 'PM', 'Data Science', 'ML / AI', 'Design', 'DevOps', 'Finance', 'Marketing']
@@ -130,6 +131,7 @@ export default function Search() {
 
         {filtered.length > 0 && <AdUnit slot="2918374650" format="auto" className="mt-8" />}
       </div>
+      <Footer />
     </div>
   )
 }

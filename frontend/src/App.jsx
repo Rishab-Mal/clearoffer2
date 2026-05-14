@@ -11,7 +11,11 @@ import Opportunities from './pages/Opportunities'
 import Profile from './pages/Profile'
 import ResetPassword from './pages/ResetPassword'
 import Admin from './pages/Admin'
+import Privacy from './pages/Privacy'
+import Terms from './pages/Terms'
+import About from './pages/About'
 import ProtectedRoute from './components/ProtectedRoute'
+import CookieBanner from './components/CookieBanner'
 
 function App() {
   const { loading } = useAuth()
@@ -38,8 +42,12 @@ function App() {
         <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/about" element={<About />} />
         <Route path="*" element={<Navigate to="/search" replace />} />
       </Routes>
+      <CookieBanner />
       <Analytics />
     </>
   )
