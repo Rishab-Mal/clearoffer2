@@ -144,7 +144,7 @@ export default function Company() {
                 <h2 className="font-bold text-slate-900">Recent reviews</h2>
                 <button onClick={() => setActiveTab('reviews')} className="text-sm text-amber-600 hover:text-amber-700 flex items-center gap-1">See all <ArrowRight size={14} /></button>
               </div>
-              <div className="space-y-4">{reviews.slice(0, 2).map(r => <ReviewCard key={r.id} review={r} />)}</div>
+              <div className="space-y-4">{reviews.slice(0, 2).map(r => <ReviewCard key={r.id} review={r} showComments />)}</div>
             </div>
 
             <AdUnit slot="3791428174" format="auto" />
