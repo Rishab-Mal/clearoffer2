@@ -3,6 +3,7 @@ import { Star, MessageSquare, Bookmark, BookmarkCheck } from 'lucide-react'
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { getCompanyDescription } from '../data/companyDescriptions'
 
 const COMPANY_COLORS = {
   Meta: 'bg-blue-500', Google: 'bg-red-500', Amazon: 'bg-orange-500',
@@ -76,8 +77,8 @@ export default function CompanyCard({ company, showSave = true }) {
         </div>
       )}
 
-      {company.ai_overview && (
-        <p className="mt-3 text-xs text-slate-500 line-clamp-2">{company.ai_overview}</p>
+      {(company.ai_overview || getCompanyDescription(company.name)) && (
+        <p className="mt-3 text-xs text-slate-500 line-clamp-2">{company.ai_overview || getCompanyDescription(company.name)}</p>
       )}
     </Link>
   )

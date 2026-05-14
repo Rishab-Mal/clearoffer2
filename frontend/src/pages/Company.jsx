@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar'
 import ReviewCard from '../components/ReviewCard'
 import AdUnit from '../components/AdUnit'
 import Footer from '../components/Footer'
+import { getCompanyDescription } from '../data/companyDescriptions'
 import { Star, AlertTriangle, Clock, Layers, RotateCcw, Cpu, BookOpen, ArrowRight, FileText, LogIn } from 'lucide-react'
 
 function RatingBar({ label, value }) {
@@ -118,14 +119,14 @@ export default function Company() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {company.ai_overview && (
+            {(company.ai_overview || getCompanyDescription(company.name)) && (
               <div className="bg-white rounded-2xl border border-slate-200 p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center"><Cpu size={14} className="text-amber-600" /></div>
-                  <h2 className="font-bold text-slate-900">AI Overview</h2>
-                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">from {company.review_count} reviews</span>
+                  <h2 className="font-bold text-slate-900">{company.ai_overview ? 'AI Overview' : 'About this company'}</h2>
+                  {company.ai_overview && <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">from {company.review_count} reviews</span>}
                 </div>
-                <p className="text-slate-700 leading-relaxed">{company.ai_overview}</p>
+                <p className="text-slate-700 leading-relaxed">{company.ai_overview || getCompanyDescription(company.name)}</p>
               </div>
             )}
 
