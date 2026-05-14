@@ -19,7 +19,7 @@ export default function InterviewPrep() {
 
       const { data: reviews } = await supabase
         .from('reviews')
-        .select('interview_topics, interview_difficulty, days_to_offer, interview_rounds')
+        .select('interview_topics, interview_difficulty, days_to_offer, interview_rounds, specific_questions, role_title, internship_year')
         .eq('company_id', id)
         .eq('is_approved', true)
 
@@ -63,6 +63,15 @@ Return ONLY valid JSON.`
         } catch {}
       }
 
+      const questions = (reviews || [])
+        .filter(r => r.specific_questions?.trim())
+        .map(r => ({
+          text: r.specific_questions.trim(),
+          role_title: r.role_title,
+          year: r.internship_year,
+          topics: r.interview_topics || [],
+        }))
+
       setPrep({
         company_name: company.name,
         topics,
@@ -72,6 +81,7 @@ Return ONLY valid JSON.`
         avg_days: avgDays,
         study_plan,
         tips,
+        questions,
         review_count: (reviews || []).length,
       })
       setLoading(false)
@@ -170,6 +180,34 @@ Return ONLY valid JSON.`
                 </div>
               )}
             </div>
+
+            {prep.questions.length > 0 && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center"><BookOpen size={14} className="text-slate-600" /></div>
+                  <h2 className="font-bold text-slate-900">What past interns were actually asked</h2>
+                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full ml-auto">{prep.questions.length} {prep.questions.length === 1 ? 'report' : 'reports'}</span>
+                </div>
+                <div className="space-y-4">
+                  {prep.questions.map((q, i) => (
+                    <div key={i} className="border border-slate-100 rounded-xl p-4 bg-slate-50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-xs font-semibold text-slate-700">{q.role_title}</span>
+                        {q.year && <span className="text-xs text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded-full">{q.year}</span>}
+                      </div>
+                      <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{q.text}</p>
+                      {q.topics.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                          {q.topics.map(t => (
+                            <span key={t} className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">{t}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {prep.study_plan && (
               <div className="bg-white border border-slate-200 rounded-2xl p-6">
