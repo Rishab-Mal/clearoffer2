@@ -59,12 +59,12 @@ export default function About() {
           <section>
             <h2 className="text-xl font-bold text-slate-900 mb-4">Contact us</h2>
             <p className="text-slate-600 mb-4">Have a question, found a bug, or want to get involved? We'd love to hear from you.</p>
-            <a
-              href="mailto:hello@clearoffer.org"
+            <Link
+              to="/contact"
               className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-bold px-5 py-3 rounded-xl transition-colors"
             >
-              <Mail size={16} />hello@clearoffer.org
-            </a>
+              <Mail size={16} />Send us a message
+            </Link>
           </section>
 
         </div>

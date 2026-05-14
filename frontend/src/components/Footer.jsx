@@ -9,7 +9,7 @@ export default function Footer() {
           <Link to="/about" className="text-xs text-slate-500 hover:text-slate-800 transition-colors">About</Link>
           <Link to="/privacy" className="text-xs text-slate-500 hover:text-slate-800 transition-colors">Privacy Policy</Link>
           <Link to="/terms" className="text-xs text-slate-500 hover:text-slate-800 transition-colors">Terms</Link>
-          <a href="mailto:hello@clearoffer.org" className="text-xs text-slate-500 hover:text-slate-800 transition-colors">Contact</a>
+          <Link to="/contact" className="text-xs text-slate-500 hover:text-slate-800 transition-colors">Contact</Link>
         </div>
       </div>
     </footer>

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+
 import Footer from '../components/Footer'
 
 export default function Privacy() {
@@ -14,7 +15,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-lg font-bold text-slate-900 mb-3">1. Who we are</h2>
-            <p>ClearOffer ("we", "us", "our") operates clearoffer.org, a platform that aggregates real internship reviews from students. You can contact us at <a href="mailto:hello@clearoffer.org" className="text-amber-600 hover:underline">hello@clearoffer.org</a>.</p>
+            <p>ClearOffer ("we", "us", "our") operates clearoffer.org, a platform that aggregates real internship reviews from students. You can contact us at <Link to="/contact" className="text-amber-600 hover:underline">our contact form</Link>.</p>
           </section>
 
           <section>
@@ -70,7 +71,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-lg font-bold text-slate-900 mb-3">7. Your rights</h2>
-            <p>Depending on your location, you may have rights to access, correct, or delete your personal data. To exercise these rights, email us at <a href="mailto:hello@clearoffer.org" className="text-amber-600 hover:underline">hello@clearoffer.org</a>. EU/EEA users have additional rights under GDPR, including the right to data portability and to lodge a complaint with your local supervisory authority.</p>
+            <p>Depending on your location, you may have rights to access, correct, or delete your personal data. To exercise these rights, email us at <Link to="/contact" className="text-amber-600 hover:underline">our contact form</Link>. EU/EEA users have additional rights under GDPR, including the right to data portability and to lodge a complaint with your local supervisory authority.</p>
           </section>
 
           <section>
@@ -85,7 +86,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-lg font-bold text-slate-900 mb-3">10. Contact</h2>
-            <p>Questions or concerns? Email us at <a href="mailto:hello@clearoffer.org" className="text-amber-600 hover:underline">hello@clearoffer.org</a>.</p>
+            <p>Questions or concerns? Email us at <Link to="/contact" className="text-amber-600 hover:underline">our contact form</Link>.</p>
           </section>
 
         </div>
