@@ -91,6 +91,17 @@ create table if not exists public.review_comments (
 -- create policy "comments_insert" on public.review_comments for insert to authenticated with check (user_id = auth.uid());
 -- create policy "comments_delete_own" on public.review_comments for delete to authenticated using (user_id = auth.uid());
 
+-- Comment reports
+-- create table if not exists public.comment_reports (
+--   id          uuid default gen_random_uuid() primary key,
+--   comment_id  uuid references public.review_comments not null,
+--   reporter_id uuid references auth.users,
+--   created_at  timestamptz default now()
+-- );
+-- alter table public.comment_reports enable row level security;
+-- create policy "comment_reports_insert" on public.comment_reports for insert to authenticated with check (true);
+-- create policy "comment_reports_read" on public.comment_reports for select to authenticated using (true);
+
 -- Saved companies
 create table if not exists public.saved_companies (
   id          uuid default gen_random_uuid() primary key,

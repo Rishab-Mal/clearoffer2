@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { MessageSquare, HelpCircle, Send, ChevronDown, ChevronUp } from 'lucide-react'
+import { MessageSquare, HelpCircle, Send, ChevronDown, ChevronUp, Flag } from 'lucide-react'
 
 function timeAgo(date) {
   const s = Math.floor((Date.now() - new Date(date)) / 1000)
@@ -21,6 +21,8 @@ export default function ReviewComments({ reviewId }) {
   const [content, setContent] = useState('')
   const [isQuestion, setIsQuestion] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [reportingId, setReportingId] = useState(null)
+  const [reported, setReported] = useState(new Set())
 
   useEffect(() => {
     supabase
@@ -70,6 +72,12 @@ export default function ReviewComments({ reviewId }) {
     setSubmitting(false)
   }
 
+  const submitReport = async (commentId) => {
+    await supabase.from('comment_reports').insert({ comment_id: commentId, reporter_id: user?.id })
+    setReported(prev => new Set([...prev, commentId]))
+    setReportingId(null)
+  }
+
   const handleKey = (e) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit()
   }
@@ -104,8 +112,28 @@ export default function ReviewComments({ reviewId }) {
                       </span>
                     )}
                     <span className="text-xs text-slate-400">{timeAgo(c.created_at)}</span>
+                    <button
+                      onClick={() => setReportingId(reportingId === c.id ? null : c.id)}
+                      className="ml-auto text-slate-300 hover:text-red-400 transition-colors"
+                      title="Report"
+                    >
+                      <Flag size={11} />
+                    </button>
                   </div>
                   <p className="text-sm text-slate-700 leading-relaxed">{c.content}</p>
+                  {reportingId === c.id && (
+                    <div className="mt-2 flex items-center gap-2">
+                      {reported.has(c.id) ? (
+                        <span className="text-xs text-green-600 font-medium">Reported — thanks</span>
+                      ) : (
+                        <>
+                          <span className="text-xs text-slate-500">Report this comment?</span>
+                          <button onClick={() => submitReport(c.id)} className="text-xs text-red-500 hover:text-red-700 font-semibold">Report</button>
+                          <button onClick={() => setReportingId(null)} className="text-xs text-slate-400 hover:text-slate-600">Cancel</button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))
