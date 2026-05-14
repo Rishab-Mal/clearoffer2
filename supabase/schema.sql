@@ -66,6 +66,31 @@ create table if not exists public.reviews (
   created_at           timestamptz default now()
 );
 
+-- Review comments and questions
+create table if not exists public.review_comments (
+  id          uuid default gen_random_uuid() primary key,
+  review_id   uuid references public.reviews not null,
+  user_id     uuid references auth.users not null,
+  author_name text not null default 'Anonymous',
+  content     text not null,
+  is_question boolean default false,
+  created_at  timestamptz default now()
+);
+-- Run in Supabase SQL editor:
+-- create table if not exists public.review_comments (
+--   id uuid default gen_random_uuid() primary key,
+--   review_id uuid references public.reviews not null,
+--   user_id uuid references auth.users not null,
+--   author_name text not null default 'Anonymous',
+--   content text not null,
+--   is_question boolean default false,
+--   created_at timestamptz default now()
+-- );
+-- alter table public.review_comments enable row level security;
+-- create policy "comments_read" on public.review_comments for select using (true);
+-- create policy "comments_insert" on public.review_comments for insert to authenticated with check (user_id = auth.uid());
+-- create policy "comments_delete_own" on public.review_comments for delete to authenticated using (user_id = auth.uid());
+
 -- Saved companies
 create table if not exists public.saved_companies (
   id          uuid default gen_random_uuid() primary key,

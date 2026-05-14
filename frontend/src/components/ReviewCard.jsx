@@ -1,6 +1,7 @@
 import { Star, ThumbsUp, ThumbsDown, RotateCcw, MapPin, Flag, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import ReviewComments from './ReviewComments'
 
 const REPORT_REASONS = [
   'Inappropriate language',
@@ -10,7 +11,7 @@ const REPORT_REASONS = [
   'Other',
 ]
 
-export default function ReviewCard({ review }) {
+export default function ReviewCard({ review, showComments = false }) {
   const [helpful, setHelpful] = useState(Math.max(0, review.helpful_count || 0))
   const [dislikes, setDislikes] = useState(Math.max(0, review.dislike_count || 0))
   const [vote, setVote] = useState(null)
@@ -189,6 +190,8 @@ export default function ReviewCard({ review }) {
           </div>
         </div>
       )}
+
+      {showComments && <ReviewComments reviewId={review.id} />}
     </div>
   )
 }

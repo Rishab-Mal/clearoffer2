@@ -169,7 +169,7 @@ export default function Company() {
               <h2 className="font-bold text-slate-900">{reviews.length} reviews</h2>
             </div>
             {reviews.flatMap((r, i) => {
-              const els = [<ReviewCard key={r.id} review={r} />]
+              const els = [<ReviewCard key={r.id} review={r} showComments />]
               if ((i + 1) % 3 === 0) els.push(<AdUnit key={`ad-${i}`} slot="6452973851" format="auto" />)
               return els
             })}
